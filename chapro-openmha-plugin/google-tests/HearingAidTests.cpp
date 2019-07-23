@@ -152,12 +152,20 @@ namespace {
 
         void processUnequalChunk() {
             buffer_type x(compressor->chunkSize() + 1);
-            hearingAid.process(x);
+            process(x);
         }
         
         void process() {
             buffer_type x(compressor->chunkSize());
+            process(x);
+        }
+        
+        void process(signal_type x) {
             hearingAid.process(x);
+        }
+        
+        auto &compressorLog() {
+            return compressor->log();
         }
     };
     
@@ -172,7 +180,7 @@ namespace {
             "compressChannels"
             "synthesizeFilterbank"
             "compressOutput",
-            compressor->log()
+            compressorLog()
         );
     }
     
@@ -181,6 +189,6 @@ namespace {
         processDoesNotInvokeCompressorWhenFrameCountDoesNotEqualChunkSize
     ) {
         processUnequalChunk();
-        assertTrue(compressor->log().isEmpty());
+        assertTrue(compressorLog().isEmpty());
     }
 }
