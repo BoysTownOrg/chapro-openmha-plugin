@@ -3,6 +3,14 @@
 #include <sstream>
 
 namespace {
+    void assertEqual(std::string expected, std::string actual) {
+        EXPECT_EQ(expected, actual);
+    }
+    
+    void assertTrue(bool c) {
+        EXPECT_TRUE(c);
+    }
+    
     class LogString {
         std::stringstream s{};
     public:
@@ -134,10 +142,6 @@ namespace {
         return c;
     }
     
-    void assertEqual(std::string expected, std::string actual) {
-        EXPECT_EQ(expected, actual);
-    }
-    
     class HearingAidTests : public ::testing::Test {
     protected:
         using signal_type = hearing_aid::HearingAid::signal_type;
@@ -146,6 +150,11 @@ namespace {
             compressorWithValidDefaults();
         hearing_aid::HearingAid hearingAid{ compressor };
 
+        void processUnequalChunk() {
+            buffer_type x(compressor->chunkSize() + 1);
+            hearingAid.process(x);
+        }
+        
         void process() {
             buffer_type x(compressor->chunkSize());
             hearingAid.process(x);
@@ -165,5 +174,13 @@ namespace {
             "compressOutput",
             compressor->log()
         );
+    }
+    
+    TEST_F(
+        HearingAidTests,
+        processDoesNotInvokeCompressorWhenFrameCountDoesNotEqualChunkSize
+    ) {
+        processUnequalChunk();
+        assertTrue(compressor->log().isEmpty());
     }
 }
