@@ -1,5 +1,5 @@
-#ifndef chapro_openmha_plugin_HearingAid_h
-#define chapro_openmha_plugin_HearingAid_h
+#ifndef hearing_aid_HearingAid_h
+#define hearing_aid_HearingAid_h
 
 #include <vector>
 

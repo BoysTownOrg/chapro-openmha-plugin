@@ -1,4 +1,4 @@
-#include <chapro-openmha-plugin/HearingAid.h>
+#include <hearing-aid/HearingAid.h>
 #include <gtest/gtest.h>
 #include <sstream>
 
