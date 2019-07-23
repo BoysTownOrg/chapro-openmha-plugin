@@ -294,9 +294,7 @@ namespace {
         processPassesComplexInputsAppropriately
     ) {
         auto compressor = std::make_shared<ForComplexSignalTests>();
-        hearing_aid::HearingAid hearingAid{
-            compressor
-        };
+        hearing_aid::HearingAid hearingAid{compressor};
         buffer_type x(1);
         process(hearingAid, x);
         assertEqual(
