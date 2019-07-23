@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		26FE576C22E758D3005FF622 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26FE576B22E758D3005FF622 /* main.cpp */; };
+		26FE577922E7591A005FF622 /* HearingAidTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26FE577822E7591A005FF622 /* HearingAidTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		26FE576622E758D2005FF622 /* CopyFiles */ = {
+		26FE577422E7591A005FF622 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -23,12 +23,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		26FE576822E758D3005FF622 /* chapro-openmha-plugin */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "chapro-openmha-plugin"; sourceTree = BUILT_PRODUCTS_DIR; };
-		26FE576B22E758D3005FF622 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		26FE577622E7591A005FF622 /* google-tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "google-tests"; sourceTree = BUILT_PRODUCTS_DIR; };
+		26FE577822E7591A005FF622 /* HearingAidTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HearingAidTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		26FE576522E758D2005FF622 /* Frameworks */ = {
+		26FE577322E7591A005FF622 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -41,7 +41,7 @@
 		26FE575F22E758D2005FF622 = {
 			isa = PBXGroup;
 			children = (
-				26FE576A22E758D3005FF622 /* chapro-openmha-plugin */,
+				26FE577722E7591A005FF622 /* google-tests */,
 				26FE576922E758D3005FF622 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,37 +49,37 @@
 		26FE576922E758D3005FF622 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				26FE576822E758D3005FF622 /* chapro-openmha-plugin */,
+				26FE577622E7591A005FF622 /* google-tests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		26FE576A22E758D3005FF622 /* chapro-openmha-plugin */ = {
+		26FE577722E7591A005FF622 /* google-tests */ = {
 			isa = PBXGroup;
 			children = (
-				26FE576B22E758D3005FF622 /* main.cpp */,
+				26FE577822E7591A005FF622 /* HearingAidTests.cpp */,
 			);
-			path = "chapro-openmha-plugin";
+			path = "google-tests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		26FE576722E758D2005FF622 /* chapro-openmha-plugin */ = {
+		26FE577522E7591A005FF622 /* google-tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 26FE576F22E758D3005FF622 /* Build configuration list for PBXNativeTarget "chapro-openmha-plugin" */;
+			buildConfigurationList = 26FE577A22E7591A005FF622 /* Build configuration list for PBXNativeTarget "google-tests" */;
 			buildPhases = (
-				26FE576422E758D2005FF622 /* Sources */,
-				26FE576522E758D2005FF622 /* Frameworks */,
-				26FE576622E758D2005FF622 /* CopyFiles */,
+				26FE577222E7591A005FF622 /* Sources */,
+				26FE577322E7591A005FF622 /* Frameworks */,
+				26FE577422E7591A005FF622 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = "chapro-openmha-plugin";
-			productName = "chapro-openmha-plugin";
-			productReference = 26FE576822E758D3005FF622 /* chapro-openmha-plugin */;
+			name = "google-tests";
+			productName = "google-tests";
+			productReference = 26FE577622E7591A005FF622 /* google-tests */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -91,7 +91,7 @@
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "Bashford, Seth";
 				TargetAttributes = {
-					26FE576722E758D2005FF622 = {
+					26FE577522E7591A005FF622 = {
 						CreatedOnToolsVersion = 10.2.1;
 					};
 				};
@@ -108,17 +108,17 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				26FE576722E758D2005FF622 /* chapro-openmha-plugin */,
+				26FE577522E7591A005FF622 /* google-tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		26FE576422E758D2005FF622 /* Sources */ = {
+		26FE577222E7591A005FF622 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				26FE576C22E758D3005FF622 /* main.cpp in Sources */,
+				26FE577922E7591A005FF622 /* HearingAidTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,7 +236,7 @@
 			};
 			name = Release;
 		};
-		26FE577022E758D3005FF622 /* Debug */ = {
+		26FE577B22E7591A005FF622 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -245,7 +245,7 @@
 			};
 			name = Debug;
 		};
-		26FE577122E758D3005FF622 /* Release */ = {
+		26FE577C22E7591A005FF622 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -266,11 +266,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		26FE576F22E758D3005FF622 /* Build configuration list for PBXNativeTarget "chapro-openmha-plugin" */ = {
+		26FE577A22E7591A005FF622 /* Build configuration list for PBXNativeTarget "google-tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				26FE577022E758D3005FF622 /* Debug */,
-				26FE577122E758D3005FF622 /* Release */,
+				26FE577B22E7591A005FF622 /* Debug */,
+				26FE577C22E7591A005FF622 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
