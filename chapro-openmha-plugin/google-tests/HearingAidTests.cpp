@@ -158,6 +158,10 @@ namespace {
         }
         
         void process(signal_type x) {
+            process(hearingAid, x);
+        }
+        
+        void process(hearing_aid::HearingAid &hearingAid, signal_type x) {
             hearingAid.process(x);
         }
         
@@ -228,9 +232,11 @@ namespace {
         HearingAidTests,
         processPassesRealInputsAppropriately
     ) {
-        hearing_aid::HearingAid hearingAid{ std::make_shared<MultipliesRealSignalsByPrimes>() };
-        std::vector<float> x = { 4 };
-        hearingAid.process(x);
+        hearing_aid::HearingAid hearingAid{
+            std::make_shared<MultipliesRealSignalsByPrimes>()
+        };
+        buffer_type x = { 4 };
+        process(hearingAid, x);
         assertEqual({ 4 * 2 * 3 * 5 * 7 * 11 * 13 }, x);
     }
 }
