@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  chapro-openmha-plugin
+//  google-tests
 //
 //  Created by Bashford, Seth on 7/23/19.
 //  Copyright © 2019 Bashford, Seth. All rights reserved.
