@@ -3,6 +3,11 @@
 #include <sstream>
 
 namespace {
+    template<typename T>
+    void assertEqual(T expected, T actual) {
+        EXPECT_EQ(expected, actual);
+    }
+    
     void assertEqual(std::string expected, std::string actual) {
         EXPECT_EQ(expected, actual);
     }
@@ -190,5 +195,15 @@ namespace {
     ) {
         processUnequalChunk();
         assertTrue(compressorLog().isEmpty());
+    }
+
+    TEST_F(HearingAidTests, processPassesChunkSize) {
+        compressor->setChunkSize(1);
+        process();
+        assertEqual(1, compressor->compressInputChunkSize());
+        assertEqual(1, compressor->filterbankAnalyzeChunkSize());
+        assertEqual(1, compressor->compressChannelsChunkSize());
+        assertEqual(1, compressor->filterbankSynthesizeChunkSize());
+        assertEqual(1, compressor->compressOutputChunkSize());
     }
 }
