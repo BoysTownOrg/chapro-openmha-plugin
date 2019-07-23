@@ -7,6 +7,17 @@ namespace {
     void assertEqual(const T &expected, const T &actual) {
         EXPECT_EQ(expected, actual);
     }
+
+    template<typename T>
+    void assertEqual(
+        const std::vector<T> &expected,
+        const std::vector<T> &actual
+    ) {
+        using size_type = typename std::vector<T>::size_type;
+        assertEqual<size_type>(expected.size(), actual.size());
+        for (size_type i{ 0 }; i < expected.size(); ++i)
+            assertEqual<T>(expected.at(i), actual.at(i));
+    }
     
     void assertEqual(const std::string &expected, const std::string &actual) {
         EXPECT_EQ(expected, actual);
@@ -186,5 +197,40 @@ namespace {
         assertEqual(1, compressor->compressChannelsChunkSize());
         assertEqual(1, compressor->filterbankSynthesizeChunkSize());
         assertEqual(1, compressor->compressOutputChunkSize());
+    }
+
+    class MultipliesRealSignalsByPrimes : public hearing_aid::FilterbankCompressor {
+    public:
+        void compressInput(real_type *input, real_type *output, int) override {
+            *input *= 2;
+            *output *= 3;
+        }
+
+        void analyzeFilterbank(real_type *input, complex_type *, int) override {
+            *input *= 5;
+        }
+
+        void synthesizeFilterbank(complex_type *, real_type *output, int) override {
+            *output *= 7;
+        }
+
+        void compressOutput(real_type *input, real_type *output, int) override {
+            *input *= 11;
+            *output *= 13;
+        }
+
+        int chunkSize() override { return 1; }
+        int channels() override { return 1; }
+        void compressChannels(complex_type *, complex_type *, int) override {}
+    };
+
+    TEST_F(
+        HearingAidTests,
+        processPassesRealInputsAppropriately
+    ) {
+        hearing_aid::HearingAid hearingAid{ std::make_shared<MultipliesRealSignalsByPrimes>() };
+        std::vector<float> x = { 4 };
+        hearingAid.process(x);
+        assertEqual({ 4 * 2 * 3 * 5 * 7 * 11 * 13 }, x);
     }
 }
