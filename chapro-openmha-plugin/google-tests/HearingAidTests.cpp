@@ -239,4 +239,69 @@ namespace {
         process(hearingAid, x);
         assertEqual({ 4 * 2 * 3 * 5 * 7 * 11 * 13 }, x);
     }
+    
+    class ForComplexSignalTests : public hearing_aid::FilterbankCompressor {
+        complex_type postSynthesizeFilterbankComplexResult_{};
+        int chunkSize_{ 1 };
+        int channels_{ 1 };
+        int pointerOffset_{};
+    public:
+        void analyzeFilterbank(real_type *, complex_type *output, int) override {
+            *(output + pointerOffset_) += 7;
+            *(output + pointerOffset_) *= 11;
+        }
+
+        void compressChannels(complex_type *input, complex_type *output, int) override {
+            *(input + pointerOffset_) *= 13;
+            *(output + pointerOffset_) *= 17;
+        }
+
+        void synthesizeFilterbank(complex_type *input, real_type *, int) override {
+            *(input + pointerOffset_) *= 19;
+            postSynthesizeFilterbankComplexResult_ = *(input + pointerOffset_);
+        }
+
+        int chunkSize() override {
+            return chunkSize_;
+        }
+
+        int channels() override {
+            return channels_;
+        }
+
+        void setChunkSize(int s) {
+            chunkSize_ = s;
+        }
+
+        void setChannels(int c) {
+            channels_ = c;
+        }
+
+        void setPointerOffset(int offset) {
+            pointerOffset_ = offset;
+        }
+
+        complex_type postSynthesizeFilterbankComplexResult() const {
+            return postSynthesizeFilterbankComplexResult_;
+        }
+
+        void compressInput(real_type *, real_type *, int) override {}
+        void compressOutput(real_type *, real_type *, int) override {}
+    };
+
+    TEST_F(
+        HearingAidTests,
+        processPassesComplexInputsAppropriately
+    ) {
+        auto compressor = std::make_shared<ForComplexSignalTests>();
+        hearing_aid::HearingAid hearingAid{
+            compressor
+        };
+        buffer_type x(1);
+        process(hearingAid, x);
+        assertEqual(
+            (0 + 7) * 11 * 13 * 17 * 19.0f,
+            compressor->postSynthesizeFilterbankComplexResult()
+        );
+    }
 }
