@@ -59,8 +59,6 @@ namespace {
         int compressChannelsChunkSize_{};
         int filterbankSynthesizeChunkSize_{};
         int compressOutputChunkSize_{};
-        int windowSize_{};
-        bool failed_{};
     public:
         auto &log() const noexcept {
             return log_;
@@ -119,22 +117,6 @@ namespace {
             return chunkSize_;
         }
 
-        void fail() noexcept {
-            failed_ = true;
-        }
-
-        bool failed() override {
-            return failed_;
-        }
-
-        void setWindowSize(int n) noexcept {
-            windowSize_ = n;
-        }
-
-        int windowSize() override {
-            return windowSize_;
-        }
-
         int channels() override {
             return 1;
         }
@@ -143,7 +125,6 @@ namespace {
     std::shared_ptr<FilterbankCompressorSpy> compressorWithValidDefaults() {
         auto c = std::make_shared<FilterbankCompressorSpy>();
         c->setChunkSize(1);
-        c->setWindowSize(1);
         return c;
     }
     

@@ -51,9 +51,7 @@ namespace hearing_aid {
             int chunkSize
         ) = 0;
         virtual int chunkSize() = 0;
-        virtual bool failed() = 0;
         virtual int channels() = 0;
-        virtual int windowSize() = 0;
     };
 
     class HearingAid {
@@ -66,8 +64,6 @@ namespace hearing_aid {
             std::shared_ptr<FilterbankCompressor>
         );
         void process(signal_type);
-    private:
-        void throwIfNotPowerOfTwo(int n, std::string name);
     };
 }
 #endif
