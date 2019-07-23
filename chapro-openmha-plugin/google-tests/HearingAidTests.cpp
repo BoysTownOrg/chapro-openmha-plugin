@@ -38,7 +38,7 @@ namespace {
         operator std::string() const { return s.str(); }
     };
 
-    class FilterbankCompressorSpy : public FilterbankCompressor {
+    class FilterbankCompressorSpy : public hearing_aid::FilterbankCompressor {
         LogString log_{};
         int chunkSize_ = 1;
         int compressInputChunkSize_{};
@@ -140,11 +140,11 @@ namespace {
     
     class HearingAidTests : public ::testing::Test {
     protected:
-        using signal_type = HearingAid::signal_type;
+        using signal_type = hearing_aid::HearingAid::signal_type;
         using buffer_type = std::vector<signal_type::element_type>;
         std::shared_ptr<FilterbankCompressorSpy> compressor =
             compressorWithValidDefaults();
-        HearingAid hearingAid{ compressor };
+        hearing_aid::HearingAid hearingAid{ compressor };
 
         void process() {
             buffer_type x(compressor->chunkSize());
