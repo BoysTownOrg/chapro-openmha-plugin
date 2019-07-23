@@ -4,11 +4,11 @@
 
 namespace {
     template<typename T>
-    void assertEqual(T expected, T actual) {
+    void assertEqual(const T &expected, const T &actual) {
         EXPECT_EQ(expected, actual);
     }
     
-    void assertEqual(std::string expected, std::string actual) {
+    void assertEqual(const std::string &expected, const std::string &actual) {
         EXPECT_EQ(expected, actual);
     }
     
@@ -44,8 +44,8 @@ namespace {
                 return false;
         }
 
-        bool contains(std::string s2) const {
-            return s.str().find(std::move(s2)) != std::string::npos;
+        bool contains(const std::string &s2) const {
+            return s.str().find(s2) != std::string::npos;
         }
         
         operator std::string() const { return s.str(); }
