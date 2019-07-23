@@ -302,4 +302,21 @@ namespace {
             compressor->postSynthesizeFilterbankComplexResult()
         );
     }
+
+    TEST_F(
+        HearingAidTests,
+        complexInputSizeIsAtLeastChannelTimesChunkSizeTimesTwo
+    ) {
+        auto compressor = std::make_shared<ForComplexSignalTests>();
+        compressor->setChunkSize(4);
+        compressor->setChannels(5);
+        hearing_aid::HearingAid hearingAid{compressor};
+        compressor->setPointerOffset(4 * 5 * 2 - 1);
+        buffer_type x(4);
+        process(hearingAid, x);
+        assertEqual(
+            (0 + 7) * 11 * 13 * 17 * 19.0f,
+            compressor->postSynthesizeFilterbankComplexResult()
+        );
+    }
 }
