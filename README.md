@@ -5,8 +5,8 @@ cd chapro-openmha-plugin
 mkdir build
 cd build
 cmake ..
-make
-make install
+cmake --build . --target chapro-openmha-plugin
+cmake --install chapro-openmha-plugin
 ```
 
 # Running in openMHA
