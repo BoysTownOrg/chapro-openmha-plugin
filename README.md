@@ -9,3 +9,9 @@ make
 make install
 ```
 
+# Running in openMHA
+```
+mha --interactive
+?read:chapro.cfg
+cmd=start
+```
