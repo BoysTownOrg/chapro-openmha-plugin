@@ -1,10 +1,6 @@
-set(
-    SOURCES
-    "src/HearingAid.cpp"
-)
-
-add_library(hearing-aid ${SOURCES})
+add_library(hearing-aid src/HearingAid.cpp)
 target_include_directories(hearing-aid PUBLIC include)
 target_include_directories(hearing-aid PRIVATE include/hearing-aid)
 target_compile_options(hearing-aid PRIVATE -Wall -Wextra -pedantic -Werror)
+target_compile_features(hearing-aid PRIVATE cxx_std_17)
 target_link_libraries(hearing-aid GSL)

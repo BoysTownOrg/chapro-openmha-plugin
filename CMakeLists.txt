@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(chapro-openMHA-plugin)
 
 add_subdirectory(googletest)
@@ -11,7 +11,7 @@ add_library(openMHA
     openMHA/mha/libmha/src/mha_errno.c
 )
 target_include_directories(openMHA PUBLIC openMHA/mha/libmha/src)
-target_compile_features(openMHA PRIVATE cxx_std_17)
+target_compile_features(openMHA PRIVATE cxx_std_11)
 add_library(chapro
     chapro/agc_process.c
     chapro/agc_prepare.c
