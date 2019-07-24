@@ -12,4 +12,13 @@ add_library(openMHA
 )
 target_include_directories(openMHA PUBLIC openMHA/mha/libmha/src)
 target_compile_features(openMHA PRIVATE cxx_std_17)
+add_library(chapro
+    chapro/agc_process.c
+    chapro/agc_prepare.c
+    chapro/firfb_prepare.c
+    chapro/firfb_process.c
+    chapro/cha_core.c
+    chapro/rfft.c
+)
+target_include_directories(chapro PUBLIC chapro)
 add_subdirectory(chapro-openmha-plugin)
