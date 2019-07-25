@@ -165,7 +165,7 @@ public:
         hearing_aid::FilterbankCompressor::Parameters p;
         p.sampleRate = configuration.srate;
         p.chunkSize = configuration.fragsize;
-        p.channels = cross_freq.data.size();
+        p.channels = cross_freq.data.size() + 1;
         p.attack_ms = attack.data;
         p.release_ms = release.data;
         p.max_dB_Spl = maxdB.data;
