@@ -5,7 +5,7 @@ extern "C" {
 #include <cha_ff.h>
 }
 
-// These are (unfortunately) defined in chapro.h but appear in some standard headers
+// These are defined in chapro.h but appear in some standard headers
 #undef _size
 #undef fmin
 #undef fmove
@@ -116,29 +116,17 @@ int Chapro::channels() {
     return channels_;
 }
 
-std::shared_ptr<hearing_aid::FilterbankCompressor> compressor() {
-    hearing_aid::FilterbankCompressor::Parameters p;
-    p.channels = 8;
-    p.attack_ms = 5;
-    p.release_ms = 50;
-    p.chunkSize = 64;
-    p.max_dB_Spl = 119;
-    p.sampleRate = 44100;
-    p.windowSize = 256;
-    p.compressionRatios = { 1.1, 1.1, 1.2, 1.1, 1.5, 1.6, 1.6, 2.1 };
-    p.broadbandOutputLimitingThresholds_dBSpl =
-        { 100, 100, 100, 100, 100, 100, 100, 100 };
-    p.crossFrequenciesHz =
-        { 317, 503, 798, 1265, 2006, 3181, 5045 };
-    p.kneepointGains_dB =
-        { 2, 2, 10, 2, 27, 36, 34, 49 };
-    p.kneepoints_dBSpl =
-        { 32, 32, 37, 29, 38, 39, 35, 39 };
-    return std::make_shared<Chapro>(std::move(p));
-}
-
 class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
-    hearing_aid::HearingAid hearingAid;
+    MHAParser::vfloat_t cross_freq;
+    MHAParser::vfloat_t cr;
+    MHAParser::vfloat_t tk;
+    MHAParser::vfloat_t tkgain;
+    MHAParser::vfloat_t bolt;
+    MHAParser::float_t attack;
+    MHAParser::float_t release;
+    MHAParser::float_t maxdB;
+    MHAParser::int_t nw;
+    std::unique_ptr<hearing_aid::HearingAid> hearingAid;
 public:
     ChaproOpenMhaPlugin(
         algo_comm_t &ac,
@@ -146,14 +134,55 @@ public:
         const std::string &
     ) :
         MHAPlugin::plugin_t<int>{{}, ac},
-        hearingAid{compressor()} {}
+        cross_freq{"cross frequencies (Hz)", "[0]", "[,]"},
+        cr{"compression ratio", "[0]", "[,]"},
+        tk{"compression-start kneepoint", "[0]", "[,]"},
+        tkgain{"compression-start gain", "[0]", "[,]"},
+        bolt{"broadband output limiting threshold", "[0]", "[,]"},
+        attack{"attack time (ms)", "0", "[,]"},
+        release{"release time (ms)", "0", "[,]"},
+        maxdB{"maximum output (dB SPL)", "0", "[,]"},
+        nw{"window size (samples)", "0", "[,]"}
+    {
+        set_node_id("chapro");
+        insert_item("cross_freq", &cross_freq);
+        insert_item("cr", &cr);
+        insert_item("tk", &tk);
+        insert_item("tkgain", &tkgain);
+        insert_item("bolt", &bolt);
+        insert_item("attack", &attack);
+        insert_item("release", &release);
+        insert_item("maxdB", &maxdB);
+        insert_item("nw", &nw);
+    }
     
     mha_wave_t *process(mha_wave_t * signal) {
-        hearingAid.process({signal->buf, signal->num_frames});
+        hearingAid->process({signal->buf, signal->num_frames});
         return signal;
     }
     
-    void prepare(mhaconfig_t &) override {}
+    void prepare(mhaconfig_t &configuration) override {
+        hearing_aid::FilterbankCompressor::Parameters p;
+        p.sampleRate = configuration.srate;
+        p.chunkSize = configuration.fragsize;
+        p.channels = cross_freq.data.size();
+        p.attack_ms = attack.data;
+        p.release_ms = release.data;
+        p.max_dB_Spl = maxdB.data;
+        p.windowSize = nw.data;
+        p.compressionRatios = {cr.data.begin(), cr.data.end()};
+        p.broadbandOutputLimitingThresholds_dBSpl =
+            {bolt.data.begin(), bolt.data.end()};
+        p.crossFrequenciesHz =
+            {cross_freq.data.begin(), cross_freq.data.end()};
+        p.kneepointGains_dB =
+            {tkgain.data.begin(), tkgain.data.end()};
+        p.kneepoints_dBSpl =
+            {tk.data.begin(), tk.data.end()};
+        hearingAid = std::make_unique<hearing_aid::HearingAid>(
+            std::make_unique<Chapro>(std::move(p))
+        );
+    }
 };
 
 MHAPLUGIN_CALLBACKS(chapro, ChaproOpenMhaPlugin, wave, wave)
