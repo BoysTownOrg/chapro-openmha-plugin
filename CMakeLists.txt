@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(chapro-openMHA-plugin)
 
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(GSL EXCLUDE_FROM_ALL)
 add_library(openMHA
