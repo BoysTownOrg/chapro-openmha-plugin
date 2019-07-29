@@ -4,6 +4,7 @@ extern "C" {
 #include <chapro.h>
 #include <cha_ff.h>
 }
+#include <gsl/gsl>
 
 // These are defined in chapro.h but appear in some standard headers
 #undef _size
@@ -157,7 +158,10 @@ public:
     }
     
     mha_wave_t *process(mha_wave_t * signal) {
-        hearingAid->process({signal->buf, signal->num_frames});
+        hearingAid->process({
+            signal->buf, 
+            gsl::narrow<hearing_aid::HearingAid::signal_type::index_type>(signal->num_frames)
+        });
         return signal;
     }
     
