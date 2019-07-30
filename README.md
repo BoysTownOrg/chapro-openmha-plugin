@@ -23,10 +23,14 @@ mkdir build
 cd build
 cmake ..
 ```
-or "in-source builds"
+or for "in-source builds"
 ```
 cd chapro-openmha-plugin
 cmake .
+```
+Note - to specify a non-default installation directory use CMAKE_INSTALL_PREFIX (if, for instance, MHA_LIBRARY_PATH is not on the system library path)
+```
+cmake -DCMAKE_INSTALL_PREFIX=path/to/openmha ..
 ```
 ## Build
 ```
