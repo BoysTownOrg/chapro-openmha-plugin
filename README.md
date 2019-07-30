@@ -1,5 +1,5 @@
 # Building
-## Clone repositories and submodules
+## Clone repository and submodules
 ```
 git clone --recurse-submodules -j8 https://github.com/boystownorg/chapro-openmha-plugin
 ```
