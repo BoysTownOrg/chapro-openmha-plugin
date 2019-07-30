@@ -1,4 +1,6 @@
 pipeline {
+    agent any
+
     stages {
         stage ('macOS-chapro-openmha-plugin - Build') {
             steps {
