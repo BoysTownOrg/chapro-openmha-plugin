@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage ('macOS-chapro-openmha-plugin - Build') {
+        stage ('Build') {
             steps {
  	        cmakeBuild buildDir: 'build', cleanBuild: true, installation: 'InSearchPath', steps: [[args: '--target chapro-openmha-plugin', withCmake: true]]
 	    }
