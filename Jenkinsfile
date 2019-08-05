@@ -20,9 +20,11 @@ node('master') {
 
 def job(compiler) {
     return {
-        docker_image(compiler).inside {
-            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
-            ctest installation: 'InSearchPath', workingDir: 'build'
+        node {
+            docker_image(compiler).inside {
+                cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
+                ctest installation: 'InSearchPath', workingDir: 'build'
+            }
         }
     }
 }
