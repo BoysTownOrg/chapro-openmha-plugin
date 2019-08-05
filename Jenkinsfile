@@ -4,17 +4,14 @@ def jobs = compilers.collectEntries {
     ["${it}": job(it)]
 }
 
-node('master') {
-    checkout scm
-    parallel jobs
-}
+parallel jobs
 
 def job(compiler) {
     return {
-        node {
-            docker_image(compiler).inside {
-                cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
-                ctest installation: 'InSearchPath', workingDir: 'build'
+        docker_image(compiler).inside {
+            checkout scm
+            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
+            ctest installation: 'InSearchPath', workingDir: 'build'
         }
     }
 }
