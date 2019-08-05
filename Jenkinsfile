@@ -1,4 +1,4 @@
-def compilers = ["gcc"]
+def compilers = ["gcc", "clang"]
 
 def jobs = compilers.collectEntries {
     ["${it}": job(it)]
@@ -21,7 +21,8 @@ node('master') {
 def job(compiler) {
     return {
         docker_image(compiler).inside {
-            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true, args: '--target chapro-openmha-plugin']]
+            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
+            ctest installation: 'InSearchPath', workingDir: 'build'
         }
     }
 }
