@@ -5,15 +5,17 @@ def jobs = compilers.collectEntries {
 }
 
 node('master') {
-    checkout scm
-    
     stage('builds-with-testing') {
         parallel jobs
     }
 
     stage('arm-build') {
-        docker_image("arm-linux-gnueabihf").inside {
-            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DCMAKE_TOOLCHAIN_FILE=/usr/Toolchain-arm-linux.cmake', installation: 'InSearchPath', steps: [[withCmake: true, args: '--target chapro-openmha-plugin']]
+        node {
+            checkout scm
+            
+            docker_image("arm-linux-gnueabihf").inside {
+                cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DCMAKE_TOOLCHAIN_FILE=/usr/Toolchain-arm-linux.cmake', installation: 'InSearchPath', steps: [[withCmake: true, args: '--target chapro-openmha-plugin']]
+            }
         }
     }
 }
@@ -21,6 +23,8 @@ node('master') {
 def job(compiler) {
     return {
         node {
+            checkout scm
+            
             docker_image(compiler).inside {
                 cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
                 ctest installation: 'InSearchPath', workingDir: 'build'
