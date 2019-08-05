@@ -1,4 +1,4 @@
-def compilers = ["gcc", "clang", "mingw", "osxcross"]
+def compilers = ["gcc"]
 
 def jobs = compilers.collectEntries {
     ["${it}": job(it)]
