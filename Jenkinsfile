@@ -1,4 +1,4 @@
-def compilers = ["gcc", "clang", "mingw"]
+def compilers = ["gcc", "clang", "mingw", "osxcross"]
 
 def jobs = compilers.collectEntries {
     ["${it}": job(it)]
@@ -31,7 +31,8 @@ def job(compiler) {
                     clang: "", 
                     mingw: 
                         "-DCMAKE_TOOLCHAIN_FILE=/usr/Toolchain-mingw32.cmake " +
-                        "-DCMAKE_CROSSCOMPILING_EMULATOR=wine64"
+                        "-DCMAKE_CROSSCOMPILING_EMULATOR=wine64",
+                    osxcross: ""
                 ]
                 cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON ' + cmake_args[compiler], installation: 'InSearchPath', steps: [[withCmake: true]]
                 ctest installation: 'InSearchPath', workingDir: 'build'
