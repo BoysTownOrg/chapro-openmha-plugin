@@ -1,17 +1,23 @@
-pipeline {
-    agent any
+def compilers = ["arm-linux-gnueabihf"]
 
-    stages {
-        stage ('Build') {
-            steps {
- 	        cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
-	    }
-        }
+def jobs = compilers.collectEntries {
+    ["${it}": job(it)]
+}
 
-        stage ('Test') {
-	    steps {
-                ctest installation: 'InSearchPath', workingDir: 'build'
-            }
-        }
+node('master') {
+    checkout scm
+    parallel jobs
+}
+
+def job(compiler) {
+    return node {
+        docker_image(compiler).inside {
+            cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DENABLE_TESTS=ON', installation: 'InSearchPath', steps: [[withCmake: true]]
+            ctest installation: 'InSearchPath', workingDir: 'build'
+	}
     }
+}
+
+def docker_image(compiler) {
+    return docker.build(compiler, "./docker/" + compiler)
 }
