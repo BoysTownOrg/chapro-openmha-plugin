@@ -25,7 +25,7 @@ node('master') {
             checkout scm
 
             docker_image("arm-linux-gnueabihf").inside {
-                cmakeBuild buildDir: 'build', cleanBuild: true, cmakeArgs: '-DCMAKE_TOOLCHAIN_FILE=/usr/Toolchain-arm-linux.cmake', installation: 'InSearchPath', steps: [[withCmake: true, args: '--target chapro-openmha-plugin']]
+                sh 'build'
             }
         }
     }
