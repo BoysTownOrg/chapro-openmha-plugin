@@ -3,7 +3,7 @@ node('master') {
         node {
             checkout scm
 
-            docker_image("arm-linux-gnueabihf").inside("-u root:root") {
+            docker_image("arm-linux-gnueabihf").inside {
                 sh 'ls bbb/'
                 sh 'chmod +x bbb/build'
                 sh 'bbb/build'
