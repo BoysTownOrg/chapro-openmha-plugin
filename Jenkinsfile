@@ -3,9 +3,13 @@ node('master') {
         node {
             checkout scm
 
+            stage('change permissions of build script') {
+                sh 'ls'
+                sh 'chmod +x ./build'
+            }
+
             docker_image("arm-linux-gnueabihf").inside {
                 sh 'ls'
-                sh 'chmod 777 ./build'
                 sh './build'
             }
         }
