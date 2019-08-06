@@ -5,8 +5,8 @@ node('master') {
 
             docker_image("gcc").inside {
                 sh 'ls'
-                sh 'mkdir build'
-                sh 'cd build'
+                sh 'mkdir build_'
+                sh 'cd build_'
                 sh 'cmake ..'
                 sh 'cmake --build .'
                 sh 'ctest .'
