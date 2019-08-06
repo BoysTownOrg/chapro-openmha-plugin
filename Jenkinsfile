@@ -5,6 +5,7 @@ node('master') {
 
             docker_image("arm-linux-gnueabihf").inside {
                 sh 'ls'
+                sh 'chmod +x ./build'
                 sh './build'
             }
         }
