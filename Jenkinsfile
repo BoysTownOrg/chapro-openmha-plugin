@@ -3,15 +3,10 @@ node('master') {
         node {
             checkout scm
 
-            stage('pls') {
-                sh 'ls'
-                sh 'chmod +x ./build'
-            }
-
             docker_image("arm-linux-gnueabihf").inside("-u root:root") {
                 sh 'ls'
-                sh 'chmod +x ./build'
-                sh './build'
+                sh 'chmod +x ./bbb/build'
+                sh './bbb/build'
             }
         }
     }
