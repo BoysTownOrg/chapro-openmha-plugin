@@ -4,6 +4,7 @@ node('master') {
             checkout scm
 
             docker_image("gcc").inside {
+                sh 'ls'
                 sh 'mkdir build'
                 sh 'cd build'
                 sh 'cmake ..'
