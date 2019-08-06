@@ -4,12 +4,23 @@ node('master') {
             checkout scm
 
             docker_image("gcc").inside {
-                sh 'ls'
-                sh 'rm -fdr build'
                 dir('build') {
                     sh 'cmake -DENABLE_TESTS=ON ..'
                     sh 'cmake --build .'
                     sh 'ctest'
+                }
+            }
+        }
+    }
+    
+    stage('mingw') {
+        node {
+            checkout scm
+
+            docker_image("mingw").inside {
+                dir('build') {
+                    sh 'cmake -DCMAKE_TOOLCHAIN_FILE=../docker/mingw/Toolchain-mingw32.cmake ..'
+                    sh 'cmake --build . --target chapro-openmha-plugin'
                 }
             }
         }
