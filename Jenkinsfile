@@ -25,6 +25,7 @@ node('master') {
             checkout scm
 
             docker_image("arm-linux-gnueabihf").inside {
+                sh 'ls'
                 sh './build'
             }
         }
