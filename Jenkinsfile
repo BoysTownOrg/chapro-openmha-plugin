@@ -1,44 +1,52 @@
 node('master') {
-    stage('gcc') {
+    stage('gcc build and test') {
         node {
             checkout scm
 
             docker_image('gcc').inside {
                 dir('build') {
                     cmake_generate_build('-DENABLE_TESTS=ON')
-                    sh 'cmake --build .'
-                    sh 'ctest'
+                    cmake_build()
+                    execute_command_line('ctest')
                 }
             }
         }
     }
     
-    stage('mingw') {
+    stage('mingw build') {
         node {
             checkout scm
 
             docker_image('mingw').inside {
                 dir('build') {
-                    sh 'cmake -DCMAKE_TOOLCHAIN_FILE=../docker/mingw/Toolchain-mingw32.cmake ..'
-                    sh 'cmake --build . --target chapro-openmha-plugin'
+                    cmake_generate_build('-DCMAKE_TOOLCHAIN_FILE=../docker/mingw/Toolchain-mingw32.cmake')
+                    cmake_build('--target chapro-openmha-plugin')
                 }
             }
         }
     }
 
-    stage('arm-linux-gnueabihf') {
+    stage('arm-linux-gnueabihf build') {
         node {
             checkout scm
 
             docker_image('arm-linux-gnueabihf').inside {
-                sh 'bbb/build'
+                execute_command_line('bbb/build')
             }
         }
     }
 }
 
 def cmake_generate_build(flags) {
-    sh 'cmake ' + flags + ' ..'
+    execute_command_line('cmake ' + flags + ' ..')
+}
+
+def cmake_build(flags = '') {
+    execute_command_line('cmake --build . ' + flags)
+}
+
+def execute_command_line(what) {
+    sh what
 }
 
 def docker_image(compiler) {
