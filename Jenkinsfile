@@ -6,9 +6,11 @@ node('master') {
             docker_image("gcc").inside {
                 sh 'ls'
                 sh 'rm -fdr build'
-                sh 'cmake -S . -B build -DENABLE_TESTS=ON'
-                sh 'cmake --build build'
-                sh 'ctest build'
+                dir('build') {
+                    sh 'cmake -DENABLE_TESTS=ON ..'
+                    sh 'cmake --build .'
+                    sh 'ctest'
+                }
             }
         }
     }
