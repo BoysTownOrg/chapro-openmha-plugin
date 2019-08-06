@@ -3,9 +3,9 @@ node('master') {
         node {
             checkout scm
 
-            docker_image("gcc").inside {
+            docker_image('gcc').inside {
                 dir('build') {
-                    sh 'cmake -DENABLE_TESTS=ON ..'
+                    cmake_generate_build('-DENABLE_TESTS=ON')
                     sh 'cmake --build .'
                     sh 'ctest'
                 }
@@ -17,7 +17,7 @@ node('master') {
         node {
             checkout scm
 
-            docker_image("mingw").inside {
+            docker_image('mingw').inside {
                 dir('build') {
                     sh 'cmake -DCMAKE_TOOLCHAIN_FILE=../docker/mingw/Toolchain-mingw32.cmake ..'
                     sh 'cmake --build . --target chapro-openmha-plugin'
@@ -30,13 +30,17 @@ node('master') {
         node {
             checkout scm
 
-            docker_image("arm-linux-gnueabihf").inside {
+            docker_image('arm-linux-gnueabihf').inside {
                 sh 'bbb/build'
             }
         }
     }
 }
 
+def cmake_generate_build(flags) {
+    sh 'cmake ' + flags + ' ..'
+}
+
 def docker_image(compiler) {
-    return docker.build(compiler, "./docker/" + compiler)
+    return docker.build(compiler, './docker/' + compiler)
 }
