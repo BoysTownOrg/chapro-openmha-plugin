@@ -5,10 +5,10 @@ node('master') {
 
             docker_image("gcc").inside {
                 sh 'ls'
-                sh 'mkdir build_'
-                sh 'cmake -S . -B build_'
-                sh 'cmake --build build_'
-                sh 'ctest build_'
+                sh 'rm -fdr build'
+                sh 'cmake -S . -B build -DENABLE_TESTS=ON'
+                sh 'cmake --build build'
+                sh 'ctest build'
             }
         }
     }
