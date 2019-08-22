@@ -4,6 +4,3 @@
 [submodule "GSL"]
 	path = GSL
 	url = https://github.com/microsoft/GSL
-[submodule "openMHA"]
-	path = openMHA
-	url = https://github.com/HoerTech-gGmbH/openMHA

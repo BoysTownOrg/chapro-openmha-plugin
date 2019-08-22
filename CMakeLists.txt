@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(chapro-openMHA-plugin)
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
@@ -9,7 +9,12 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(GSL EXCLUDE_FROM_ALL)
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
+set(PRIVATE_INSTALL_INCLUDE ${PRIVATE_INSTALL_PREFIX}/include)
+file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
+file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
+file(MAKE_DIRECTORY ${PRIVATE_INSTALL_INCLUDE})
 
 include(ExternalProject)
 
@@ -19,13 +24,12 @@ ExternalProject_Add(
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND ./configure
     BUILD_COMMAND make DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} mha/libmha
-    INSTALL_COMMAND make PREFIX=${CMAKE_BINARY_DIR} install
+    INSTALL_COMMAND make PREFIX=${PRIVATE_INSTALL_PREFIX} install
 )
 
 add_library(openMHA SHARED IMPORTED)
-set(lib_openMHA_name ${CMAKE_SHARED_LIBRARY_PREFIX}openMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
 set_target_properties(openMHA PROPERTIES 
-    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/${lib_openMHA_name})
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_PREFIX}/lib/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 ExternalProject_Get_Property(project_openMHA SOURCE_DIR)
 include_directories(${SOURCE_DIR}/mha/libmha/src)
@@ -36,18 +40,14 @@ ExternalProject_Add(
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND chmod +x configure && ./configure
     BUILD_COMMAND make libchapro.a
-    INSTALL_COMMAND 
-        mkdir -p ${CMAKE_BINARY_DIR}/include &&
-        mkdir -p ${CMAKE_BINARY_DIR}/lib && 
-        make 
-        INCDIR=${CMAKE_BINARY_DIR}/include
-        LIBDIR=${CMAKE_BINARY_DIR}/lib install
+    INSTALL_COMMAND make 
+        INCDIR=${PRIVATE_INSTALL_INCLUDE}
+        LIBDIR=${PRIVATE_INSTALL_LIB} install
 )
 
 add_library(chapro STATIC IMPORTED)
-set(lib_chapro_name ${CMAKE_STATIC_LIBRARY_PREFIX}chapro${CMAKE_STATIC_LIBRARY_SUFFIX})
 set_target_properties(chapro PROPERTIES 
-    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/${lib_chapro_name})
-include_directories(${CMAKE_BINARY_DIR}/include)
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a)
+target_include_directories(chapro INTERFACE ${PRIVATE_INSTALL_INCLUDE})
 
 add_subdirectory(chapro-openmha-plugin)
