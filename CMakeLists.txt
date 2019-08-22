@@ -5,26 +5,49 @@ if (${ENABLE_TESTS})
     enable_testing()
 endif()
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(GSL EXCLUDE_FROM_ALL)
-add_library(openMHA
-    openMHA/mha/libmha/src/mha_parser.cpp
-    openMHA/mha/libmha/src/mha_events.cpp
-    openMHA/mha/libmha/src/mha_error.cpp
-    openMHA/mha/libmha/src/mha_os.cpp
-    openMHA/mha/libmha/src/mha_errno.c
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+include(ExternalProject)
+
+ExternalProject_Add(
+    project_openMHA
+    GIT_REPOSITORY  https://github.com/HoerTech-gGmbH/openMHA
+    BUILD_IN_SOURCE TRUE
+    CONFIGURE_COMMAND ./configure
+    BUILD_COMMAND make DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} mha/libmha
+    INSTALL_COMMAND make PREFIX=${CMAKE_BINARY_DIR} install
 )
-set_property(TARGET openMHA PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(openMHA PUBLIC openMHA/mha/libmha/src)
-target_compile_features(openMHA PRIVATE cxx_std_11)
-add_library(chapro
-    chapro/agc_process.c
-    chapro/agc_prepare.c
-    chapro/firfb_prepare.c
-    chapro/firfb_process.c
-    chapro/cha_core.c
-    chapro/rfft.c
+
+add_library(openMHA SHARED IMPORTED)
+set(lib_openMHA_name ${CMAKE_SHARED_LIBRARY_PREFIX}openMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
+set_target_properties(openMHA PROPERTIES 
+    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/${lib_openMHA_name})
+
+ExternalProject_Get_Property(project_openMHA SOURCE_DIR)
+include_directories(${SOURCE_DIR}/mha/libmha/src)
+
+ExternalProject_Add(
+    project_chapro
+    GIT_REPOSITORY https://github.com/boystownorg/chapro
+    BUILD_IN_SOURCE TRUE
+    CONFIGURE_COMMAND chmod +x configure && ./configure
+    BUILD_COMMAND make libchapro.a
+    INSTALL_COMMAND 
+        mkdir -p ${CMAKE_BINARY_DIR}/include &&
+        mkdir -p ${CMAKE_BINARY_DIR}/lib && 
+        make 
+        INCDIR=${CMAKE_BINARY_DIR}/include
+        LIBDIR=${CMAKE_BINARY_DIR}/lib install
 )
-set_property(TARGET chapro PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(chapro PUBLIC chapro)
+
+add_library(chapro STATIC IMPORTED)
+set(lib_chapro_name ${CMAKE_STATIC_LIBRARY_PREFIX}chapro${CMAKE_STATIC_LIBRARY_SUFFIX})
+set_target_properties(chapro PROPERTIES 
+    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/${lib_chapro_name})
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 add_subdirectory(chapro-openmha-plugin)
