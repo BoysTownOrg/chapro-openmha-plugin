@@ -16,6 +16,14 @@ file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_INCLUDE})
 
+set(OPENMHA_COMPILER_PREFIX "")
+set(CHAPRO_MAKEFILE "Makefile")
+
+if(${CMAKE_CROSSCOMPILING})
+    set(OPENMHA_COMPILER_PREFIX "arm-linux-gnueabihf-")
+    set(CHAPRO_MAKEFILE "makefile.arm")
+endif()
+
 include(ExternalProject)
 
 ExternalProject_Add(
@@ -23,7 +31,9 @@ ExternalProject_Add(
     GIT_REPOSITORY  https://github.com/HoerTech-gGmbH/openMHA
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND ./configure
-    BUILD_COMMAND make DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} mha/libmha
+    BUILD_COMMAND make 
+        DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
+        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} mha/libmha
     INSTALL_COMMAND make PREFIX=${PRIVATE_INSTALL_PREFIX} install
 )
 
@@ -39,10 +49,10 @@ ExternalProject_Add(
     GIT_REPOSITORY https://github.com/boystownorg/chapro
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND chmod +x configure && ./configure
-    BUILD_COMMAND make libchapro.a
-    INSTALL_COMMAND make 
-        LIBDIR=${PRIVATE_INSTALL_LIB} 
-        INCDIR=${PRIVATE_INSTALL_INCLUDE} install
+    BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
+    INSTALL_COMMAND 
+        cp -f libchapro.a ${PRIVATE_INSTALL_LIB} &&
+        cp -f chapro.h ${PRIVATE_INSTALL_INCLUDE}
 )
 
 add_library(chapro STATIC IMPORTED)
