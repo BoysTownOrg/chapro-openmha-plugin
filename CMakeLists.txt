@@ -40,9 +40,9 @@ ExternalProject_Add(
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND chmod +x configure && ./configure
     BUILD_COMMAND make libchapro.a
-    INSTALL_COMMAND
-        cp -f libchapro.a ${PRIVATE_INSTALL_LIB} &&
-	    cp -f chapro.h cha_ff.h ${PRIVATE_INSTALL_INCLUDE}
+    INSTALL_COMMAND make 
+        LIBDIR=${PRIVATE_INSTALL_LIB} 
+        INCDIR=${PRIVATE_INSTALL_INCLUDE} install
 )
 
 add_library(chapro STATIC IMPORTED)

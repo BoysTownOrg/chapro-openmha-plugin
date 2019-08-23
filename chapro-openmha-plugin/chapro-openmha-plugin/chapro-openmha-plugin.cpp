@@ -2,7 +2,6 @@
 #include <hearing-aid/HearingAid.h>
 extern "C" {
 #include <chapro.h>
-#include <cha_ff.h>
 }
 #include <gsl/gsl>
 
