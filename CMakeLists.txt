@@ -17,11 +17,13 @@ file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_INCLUDE})
 
 set(OPENMHA_COMPILER_PREFIX "")
+set(OPENMHA_ARCH "x86_64")
 set(CHAPRO_MAKEFILE "Makefile")
 
 if(${CMAKE_CROSSCOMPILING})
     set(OPENMHA_COMPILER_PREFIX "arm-linux-gnueabihf-")
     set(CHAPRO_MAKEFILE "makefile.arm")
+    set(OPENMHA_ARCH "armhf")
 endif()
 
 include(ExternalProject)
@@ -33,7 +35,8 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ./configure
     BUILD_COMMAND make 
         DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
-        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} mha/libmha
+        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} 
+        ARCH=${OPENMHA_ARCH} mha/libmha
     INSTALL_COMMAND find ./mha/ -type f | grep -i ${CMAKE_SHARED_LIBRARY_SUFFIX}$ | xargs -i cp {} ${PRIVATE_INSTALL_LIB}
 )
 
