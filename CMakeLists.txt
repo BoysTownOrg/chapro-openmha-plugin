@@ -34,7 +34,7 @@ ExternalProject_Add(
     BUILD_COMMAND make 
         DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
         COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} mha/libmha
-    INSTALL_COMMAND make PREFIX=${PRIVATE_INSTALL_PREFIX} install
+    INSTALL_COMMAND find ./mha/ -type f | grep -i ${CMAKE_SHARED_LIBRARY_SUFFIX}$ | xargs -i cp {} ${PRIVATE_INSTALL_LIB}
 )
 
 add_library(openMHA SHARED IMPORTED)
