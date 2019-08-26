@@ -1,6 +1,6 @@
 FROM gcc:latest
 RUN apt-get -y update
-RUN apt-get install software-properties-common
+RUN apt-get install -y software-properties-common
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7D6CDF547DA4ABD
 RUN apt-add-repository 'deb http://apt.hoertech.de bionic universe'
 RUN apt-get install -y libopenmha-dev
