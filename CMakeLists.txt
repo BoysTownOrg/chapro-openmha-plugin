@@ -44,9 +44,6 @@ add_library(openMHA SHARED IMPORTED)
 set_target_properties(openMHA PROPERTIES 
     IMPORTED_LOCATION ${PRIVATE_INSTALL_PREFIX}/lib/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-ExternalProject_Get_Property(project_openMHA SOURCE_DIR)
-include_directories(${SOURCE_DIR}/mha/libmha/src)
-
 ExternalProject_Add(
     project_chapro
     GIT_REPOSITORY https://github.com/boystownorg/chapro
