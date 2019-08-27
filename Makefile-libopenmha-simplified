@@ -11,26 +11,4 @@ OBJECTS = \
 	mha_parser.o mha_error.o mha_errno.o \
 	mha_events.o mha_os.o
 
-ifeq "$(PLATFORM)" "linux"
-LDLIBS += -ldl -lpthread
-else
-ifeq "$(PLATFORM)" "Darwin"
-
-else
-LDLIBS += -lws2_32
-endif
-endif
-
 $(BUILD_DIR)/$(libmha)$(DYNAMIC_LIB_EXT): $(OBJECTS:%.o=$(BUILD_DIR)/%.o)
-
-ifeq "MinGW" "$(PLATFORM)"
-LDLIBS += -Wl,--out-implib,$(basename $@).a
-endif
-
-ifeq "$(PLATFORM)" "linux"
-FIND_LIBOPENMHA_RPATH = -Wl,-rpath=./$(BUILD_DIR)
-endif
-
-# Local Variables:
-# coding: utf-8-unix
-# End:

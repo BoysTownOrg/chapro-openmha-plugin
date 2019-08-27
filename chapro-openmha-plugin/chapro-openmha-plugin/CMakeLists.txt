@@ -15,29 +15,32 @@ if(${CMAKE_CROSSCOMPILING})
     set(OPENMHA_ARCH "armhf")
 endif()
 
+set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
+set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
+set(OPENMHA_RELATIVE_BUILD_DIR "build")
+set(LIBOPENMHA_NAME libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
+
 include(ExternalProject)
 
 ExternalProject_Add(
     project_openMHA
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA
-    BUILD_IN_SOURCE TRUE
+    SOURCE_DIR ${OPENMHA_SOURCE_DIR}
     CONFIGURE_COMMAND 
-        ./configure --arch=${OPENMHA_ARCH} && 
-        cp -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified mha/libmha
-    BUILD_COMMAND make -C mha/libmha/ -f Makefile-libopenmha-simplified
+        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH}
+    BUILD_COMMAND 
+        make -C ${OPENMHA_LIBMHA_DIR}
+        -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
         DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
-        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} 
-        ARCH=${OPENMHA_ARCH}
-        BUILD_DIR=build
+        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
+        BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
     INSTALL_COMMAND 
-        cp -f mha/libmha/build/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX} ${PRIVATE_INSTALL_LIB} &&
-        find mha/libmha/src/ -type f -name "*.h*" -exec cp {} ${PRIVATE_INSTALL_INCLUDE} $<SEMICOLON>
+        cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${LIBOPENMHA_NAME} ${PRIVATE_INSTALL_LIB}
 )
 
 add_library(openMHA SHARED IMPORTED)
 set_target_properties(openMHA PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
-target_include_directories(openMHA INTERFACE ${PRIVATE_INSTALL_INCLUDE})
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${LIBOPENMHA_NAME})
+target_include_directories(openMHA INTERFACE ${OPENMHA_LIBMHA_DIR}/src)
 
 ExternalProject_Add(
     project_chapro
