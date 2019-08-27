@@ -32,8 +32,8 @@ ExternalProject_Add(
     project_openMHA
     GIT_REPOSITORY  https://github.com/HoerTech-gGmbH/openMHA
     BUILD_IN_SOURCE TRUE
-    CONFIGURE_COMMAND ./configure --arch=${OPENMHA_ARCH}
-    BUILD_COMMAND make 
+    CONFIGURE_COMMAND ./configure --arch=${OPENMHA_ARCH} && cp -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified mha/libmha
+    BUILD_COMMAND make -f mha/libmha/Makefile-libopenmha-simplified
         DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
         COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} 
         ARCH=${OPENMHA_ARCH} mha/libmha
