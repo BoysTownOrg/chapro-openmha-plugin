@@ -1,11 +1,27 @@
 node('master') {
+    stage('gcc build and test') {
+        node {
+            checkout_scm()
+
+            docker_image('gcc').inside {
+                dir('build') {
+                    cmake_generate_build_with_tests()
+                    cmake_build()
+                    execute_tests()
+                }
+            }
+        }
+    }
 
     stage('arm-linux-gnueabihf build') {
         node {
             checkout_scm()
 
             docker_image('arm-linux-gnueabihf').inside {
-                execute_command_line('bbb/build')
+                dir('build') {
+                    cmake_generate_build_with_toolchain('docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake')
+                    cmake_build_target('chapro-openmha-plugin')
+                }
             }
         }
     }
