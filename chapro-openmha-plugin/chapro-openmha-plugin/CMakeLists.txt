@@ -19,7 +19,7 @@ include(ExternalProject)
 
 ExternalProject_Add(
     project_openMHA
-    GIT_REPOSITORY  https://github.com/HoerTech-gGmbH/openMHA
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND 
         ./configure --arch=${OPENMHA_ARCH} && 
@@ -41,7 +41,7 @@ target_include_directories(openMHA INTERFACE ${PRIVATE_INSTALL_INCLUDE})
 
 ExternalProject_Add(
     project_chapro
-    GIT_REPOSITORY https://github.com/boystownorg/chapro
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND chmod +x configure && ./configure
     BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
