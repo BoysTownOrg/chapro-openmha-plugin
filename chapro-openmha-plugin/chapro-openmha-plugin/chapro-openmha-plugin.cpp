@@ -1,4 +1,4 @@
-#include <openmha/mha_plugin.hh>
+#include "mha_plugin.hh"
 #include <hearing-aid/HearingAid.h>
 extern "C" {
 #include <chapro.h>

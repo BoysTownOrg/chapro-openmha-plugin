@@ -38,13 +38,17 @@ ExternalProject_Add(
     BUILD_COMMAND make -C mha/libmha/ -f Makefile-libopenmha-simplified
         DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
         COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX} 
-        ARCH=${OPENMHA_ARCH} mha/libmha
-    INSTALL_COMMAND find ./mha/ -type f | grep -i ${CMAKE_SHARED_LIBRARY_SUFFIX}$ | xargs -i cp {} ${PRIVATE_INSTALL_LIB}
+        ARCH=${OPENMHA_ARCH}
+        BUILD_DIR=build
+    INSTALL_COMMAND 
+        cp -f mha/libmha/build/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX} ${PRIVATE_INSTALL_LIB} &&
+        find mha/libmha/src/ -type f -name "*.h*" -exec cp {} ${PRIVATE_INSTALL_INCLUDE} $<SEMICOLON>
 )
 
 add_library(openMHA SHARED IMPORTED)
 set_target_properties(openMHA PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_PREFIX}/lib/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libopenMHA${CMAKE_SHARED_LIBRARY_SUFFIX})
+target_include_directories(openMHA INTERFACE ${PRIVATE_INSTALL_INCLUDE})
 
 ExternalProject_Add(
     project_chapro
