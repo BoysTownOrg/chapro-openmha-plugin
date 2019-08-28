@@ -25,7 +25,7 @@ ExternalProject_Add(
     SOURCE_DIR ${OPENMHA_SOURCE_DIR}
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND 
-        ./configure --arch=${OPENMHA_ARCH}
+        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH}
     BUILD_COMMAND 
         make -C ${OPENMHA_LIBMHA_DIR}
         -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
