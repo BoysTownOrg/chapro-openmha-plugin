@@ -1,9 +1,7 @@
 set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
-set(PRIVATE_INSTALL_INCLUDE ${PRIVATE_INSTALL_PREFIX}/include)
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
-file(MAKE_DIRECTORY ${PRIVATE_INSTALL_INCLUDE})
 
 set(OPENMHA_COMPILER_PREFIX "")
 set(OPENMHA_ARCH "x86_64")
@@ -25,8 +23,9 @@ include(ExternalProject)
 ExternalProject_Add(
     project_openMHA
     SOURCE_DIR ${OPENMHA_SOURCE_DIR}
+    BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND 
-        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH}
+        ./configure --arch=${OPENMHA_ARCH}
     BUILD_COMMAND 
         make -C ${OPENMHA_LIBMHA_DIR}
         -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
@@ -49,21 +48,22 @@ ExternalProject_Add(
     CONFIGURE_COMMAND chmod +x configure && ./configure
     BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
     INSTALL_COMMAND 
-        cp -f libchapro.a ${PRIVATE_INSTALL_LIB} &&
-        cp -f chapro.h ${PRIVATE_INSTALL_INCLUDE}
+        cp -f libchapro.a ${PRIVATE_INSTALL_LIB}
 )
 
 add_library(chapro STATIC IMPORTED)
 set_target_properties(chapro PROPERTIES 
     IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a)
-target_include_directories(chapro INTERFACE ${PRIVATE_INSTALL_INCLUDE})
+target_include_directories(chapro INTERFACE ${CMAKE_SOURCE_DIR}/chapro)
 
 add_library(chapro-openmha-plugin SHARED chapro-openmha-plugin.cpp)
 add_dependencies(chapro-openmha-plugin project_chapro)
 add_dependencies(chapro-openmha-plugin project_openMHA)
 set_target_properties(chapro-openmha-plugin PROPERTIES PREFIX "")
 set_target_properties(chapro-openmha-plugin PROPERTIES OUTPUT_NAME "chapro")
-target_compile_options(chapro-openmha-plugin PRIVATE -Wall -Wextra -pedantic -Werror -O3)
+target_compile_options(chapro-openmha-plugin PRIVATE 
+    -Wall -Wextra -pedantic -Werror -O3
+)
 target_compile_features(chapro-openmha-plugin PRIVATE cxx_std_17)
 target_link_libraries(chapro-openmha-plugin hearing-aid openMHA chapro GSL)
 install(TARGETS chapro-openmha-plugin DESTINATION lib)
