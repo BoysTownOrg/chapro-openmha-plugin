@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(chapro-openMHA-plugin)
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
