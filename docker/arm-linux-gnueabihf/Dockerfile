@@ -1,7 +1,6 @@
-FROM alpine:latest
-RUN apk update && apk add \
+FROM ubuntu:latest
+RUN apt-get update && apt-get install -y \
     make \
     gcc-arm-linux-gnueabihf \
     g++-arm-linux-gnueabihf \
-    cmake \
-    bash
+    cmake
