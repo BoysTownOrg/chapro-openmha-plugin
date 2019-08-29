@@ -6,13 +6,13 @@ class SuperSignalProcessor {
 public:
     using real_type = float;
     virtual ~SuperSignalProcessor() = default;
-    virtual void feedbackCancelInput() = 0;
-    virtual void compressInput() = 0;
-    virtual void filterbankAnalyze() = 0;
-    virtual void compressChannel() = 0;
-    virtual void filterbankSynthesize() = 0;
-    virtual void compressOutput() = 0;
-    virtual void feedbackCancelOutput() = 0;
+    virtual void feedbackCancelInput(int) = 0;
+    virtual void compressInput(int) = 0;
+    virtual void filterbankAnalyze(int) = 0;
+    virtual void compressChannel(int) = 0;
+    virtual void filterbankSynthesize(int) = 0;
+    virtual void compressOutput(int) = 0;
+    virtual void feedbackCancelOutput(int) = 0;
     virtual int chunkSize() = 0;
 };
 
@@ -28,13 +28,13 @@ public:
         const auto chunkSize = processor->chunkSize();
         if (signal.size() != chunkSize)
             return;
-        processor->feedbackCancelInput();
-        processor->compressInput();
-        processor->filterbankAnalyze();
-        processor->compressChannel();
-        processor->filterbankSynthesize();
-        processor->compressOutput();
-        processor->feedbackCancelOutput();
+        processor->feedbackCancelInput(chunkSize);
+        processor->compressInput(chunkSize);
+        processor->filterbankAnalyze(chunkSize);
+        processor->compressChannel(chunkSize);
+        processor->filterbankSynthesize(chunkSize);
+        processor->compressOutput(chunkSize);
+        processor->feedbackCancelOutput(chunkSize);
     }
 };
 }
@@ -47,36 +47,78 @@ namespace hearing_aid::tests { namespace {
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
     int chunkSize_;
+    int feedbackCancelInputChunkSize_;
+    int compressInputChunkSize_;
+    int filterbankAnalyzeChunkSize_;
+    int compressChannelChunkSize_;
+    int filterbankSynthesizeChunkSize_;
+    int compressOutputChunkSize_;
+    int feedbackCancelOutputChunkSize_;
 public:
     auto &log() const {
         return log_;
     }
 
-    void feedbackCancelInput() override {
+    int feedbackCancelInputChunkSize() {
+        return feedbackCancelInputChunkSize_;
+    }
+
+    int compressInputChunkSize() {
+        return compressInputChunkSize_;
+    }
+
+    int filterbankAnalyzeChunkSize() {
+        return filterbankAnalyzeChunkSize_;
+    }
+
+    int compressChannelChunkSize() {
+        return compressChannelChunkSize_;
+    }
+
+    int filterbankSynthesizeChunkSize() {
+        return filterbankSynthesizeChunkSize_;
+    }
+
+    int compressOutputChunkSize() {
+        return compressOutputChunkSize_;
+    }
+
+    int feedbackCancelOutputChunkSize() {
+        return feedbackCancelOutputChunkSize_;
+    }
+
+    void feedbackCancelInput(int c) override {
+        feedbackCancelInputChunkSize_ = c;
         log_.insert("feedbackCancelInput");
     }
 
-    void compressInput() override {
+    void compressInput(int c) override {
+        compressInputChunkSize_ = c;
         log_.insert("compressInput");
     }
 
-    void filterbankAnalyze() override {
+    void filterbankAnalyze(int c) override {
+        filterbankAnalyzeChunkSize_ = c;
         log_.insert("filterbankAnalyze");
     }
 
-    void compressChannel() override {
+    void compressChannel(int c) override {
+        compressChannelChunkSize_ = c;
         log_.insert("compressChannel");
     }
 
-    void filterbankSynthesize() override {
+    void filterbankSynthesize(int c) override {
+        filterbankSynthesizeChunkSize_ = c;
         log_.insert("filterbankSynthesize");
     }
 
-    void compressOutput() override {
+    void compressOutput(int c) override {
+        compressOutputChunkSize_ = c;
         log_.insert("compressOutput");
     }
 
-    void feedbackCancelOutput() override {
+    void feedbackCancelOutput(int c) override {
+        feedbackCancelOutputChunkSize_ = c;
         log_.insert("feedbackCancelOutput");
     }
 
@@ -99,13 +141,28 @@ protected:
     }
 
     void process() {
-        hearingAid.process({});
+        std::vector<float> x(superSignalProcessor->chunkSize());
+        hearingAid.process(x);
     }
 
     void processUnequalChunk() {
         superSignalProcessor->setChunkSize(1);
         std::vector<float> x(2);
         hearingAid.process(x);
+    }
+
+    void assertEachChunkSizeEquals(int c) {
+        assertEqual(c, superSignalProcessor->feedbackCancelInputChunkSize());
+        assertEqual(c, superSignalProcessor->compressInputChunkSize());
+        assertEqual(c, superSignalProcessor->filterbankAnalyzeChunkSize());
+        assertEqual(c, superSignalProcessor->compressChannelChunkSize());
+        assertEqual(c, superSignalProcessor->filterbankSynthesizeChunkSize());
+        assertEqual(c, superSignalProcessor->compressOutputChunkSize());
+        assertEqual(c, superSignalProcessor->feedbackCancelOutputChunkSize());
+    }
+
+    void setChunkSize(int c) {
+        superSignalProcessor->setChunkSize(c);
     }
 };
 
@@ -129,5 +186,11 @@ TEST_F(
 ) {
     processUnequalChunk();
     assertTrue(signalProcessingLog().isEmpty());
+}
+
+TEST_F(AfcHearingAidTests, processPassesChunkSize) {
+    setChunkSize(1);
+    process();
+    assertEachChunkSizeEquals(1);
 }
 }}
