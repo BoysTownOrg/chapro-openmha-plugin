@@ -238,6 +238,21 @@ protected:
         assertEqual(c, superSignalProcessor->compressChannelOutput().size());
         assertEqual(c, superSignalProcessor->filterbankSynthesizeInput().size());
     }
+
+    void assertEachComplexBufferEqual() {
+        assertEqual(
+            superSignalProcessor->compressChannelInput(), 
+            superSignalProcessor->filterbankAnalyzeOutput()
+        );
+        assertEqual(
+            superSignalProcessor->compressChannelOutput(), 
+            superSignalProcessor->compressChannelInput()
+        );
+        assertEqual(
+            superSignalProcessor->filterbankSynthesizeInput(), 
+            superSignalProcessor->compressChannelOutput()
+        );
+    }
 };
 
 TEST_F(AfcHearingAidTests, invokesFunctionsInOrder) {
@@ -349,5 +364,15 @@ TEST_F(
     setChannels(5);
     process();
     assertEachComplexSize(2 * 3 * 5);
+}
+
+TEST_F(
+    AfcHearingAidTests,
+    eachComplexBufferIsEqual
+) {
+    setChunkSize(3);
+    setChannels(5);
+    process();
+    assertEachComplexBufferEqual();
 }
 }}
