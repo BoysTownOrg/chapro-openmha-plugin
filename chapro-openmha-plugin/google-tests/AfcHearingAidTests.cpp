@@ -1,5 +1,6 @@
 #include <gsl/gsl>
 #include <memory>
+#include <vector>
 
 namespace hearing_aid {
 class SuperSignalProcessor {
@@ -9,21 +10,25 @@ public:
     virtual ~SuperSignalProcessor() = default;
     virtual void feedbackCancelInput(real_type *, real_type *, int) = 0;
     virtual void compressInput(real_type *, real_type *, int) = 0;
-    virtual void filterbankAnalyze(real_type *, complex_type *, int) = 0;
-    virtual void compressChannel(real_type *, real_type *, int) = 0;
-    virtual void filterbankSynthesize(complex_type *, real_type *, int) = 0;
+    virtual void filterbankAnalyze(real_type *, gsl::span<complex_type>, int) = 0;
+    virtual void compressChannel(gsl::span<complex_type>, gsl::span<complex_type>, int) = 0;
+    virtual void filterbankSynthesize(gsl::span<complex_type>, real_type *, int) = 0;
     virtual void compressOutput(real_type *, real_type *, int) = 0;
     virtual void feedbackCancelOutput(real_type *, int) = 0;
     virtual int chunkSize() = 0;
+    virtual int channels() = 0;
 };
 
 class AfcHearingAid {
+    std::vector<SuperSignalProcessor::complex_type> buffer;
     std::shared_ptr<SuperSignalProcessor> processor;
 public:
     using signal_type = gsl::span<SuperSignalProcessor::real_type>;
     explicit AfcHearingAid(
         std::shared_ptr<SuperSignalProcessor> processor
-    ) : processor{std::move(processor)} {}
+    ) :
+        buffer(2 * processor->chunkSize() * processor->channels()),
+        processor{std::move(processor)} {}
 
     void process(signal_type signal) {
         const auto chunkSize = processor->chunkSize();
@@ -32,9 +37,9 @@ public:
         auto signal_ = signal.data();
         processor->feedbackCancelInput(signal_, signal_, chunkSize);
         processor->compressInput(signal_, signal_, chunkSize);
-        processor->filterbankAnalyze(signal_, {}, chunkSize);
-        processor->compressChannel(signal_, signal_, chunkSize);
-        processor->filterbankSynthesize({}, signal_, chunkSize);
+        processor->filterbankAnalyze(signal_, buffer, chunkSize);
+        processor->compressChannel(buffer, buffer, chunkSize);
+        processor->filterbankSynthesize(buffer, signal_, chunkSize);
         processor->compressOutput(signal_, signal_, chunkSize);
         processor->feedbackCancelOutput(signal_, chunkSize);
     }
@@ -53,6 +58,10 @@ public:
 
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
+    gsl::span<complex_type> filterbankSynthesizeInput_;
+    gsl::span<complex_type> compressChannelOutput_;
+    gsl::span<complex_type> compressChannelInput_;
+    gsl::span<complex_type> filterbankAnalyzeOutput_;
     int chunkSize_;
     int feedbackCancelInputChunkSize_;
     int compressInputChunkSize_;
@@ -61,7 +70,24 @@ class SuperSignalProcessorStub : public SuperSignalProcessor {
     int filterbankSynthesizeChunkSize_;
     int compressOutputChunkSize_;
     int feedbackCancelOutputChunkSize_;
+    int channels_;
 public:
+    auto filterbankSynthesizeInput() const {
+        return filterbankSynthesizeInput_;
+    }
+
+    auto compressChannelOutput() const {
+        return compressChannelOutput_;
+    }
+
+    auto compressChannelInput() const {
+        return compressChannelInput_;
+    }
+
+    auto filterbankAnalyzeOutput() const {
+        return filterbankAnalyzeOutput_;
+    }
+
     auto &log() const {
         return log_;
     }
@@ -104,17 +130,21 @@ public:
         log_.insert("compressInput");
     }
 
-    void filterbankAnalyze(real_type *, complex_type *, int c) override {
+    void filterbankAnalyze(real_type *, gsl::span<complex_type> out, int c) override {
+        filterbankAnalyzeOutput_ = out;
         filterbankAnalyzeChunkSize_ = c;
         log_.insert("filterbankAnalyze");
     }
 
-    void compressChannel(real_type *, real_type *, int c) override {
+    void compressChannel(gsl::span<complex_type> in, gsl::span<complex_type> out, int c) override {
+        compressChannelInput_ = in;
+        compressChannelOutput_ = out;
         compressChannelChunkSize_ = c;
         log_.insert("compressChannel");
     }
 
-    void filterbankSynthesize(complex_type *, real_type *, int c) override {
+    void filterbankSynthesize(gsl::span<complex_type> in, real_type *, int c) override {
+        filterbankSynthesizeInput_ = in;
         filterbankSynthesizeChunkSize_ = c;
         log_.insert("filterbankSynthesize");
     }
@@ -136,6 +166,14 @@ public:
     int chunkSize() override {
         return chunkSize_;
     }
+
+    void setChannels(int c) {
+        channels_ = c;
+    }
+
+    int channels() override {
+        return channels_;
+    }
 };
 
 class AfcHearingAidTests : public ::testing::Test {
@@ -143,7 +181,6 @@ class AfcHearingAidTests : public ::testing::Test {
     using buffer_type = std::vector<signal_type::element_type>;
     std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor =
         std::make_shared<SuperSignalProcessorStub>();
-    AfcHearingAid hearingAid{superSignalProcessor};
 protected:
     auto &signalProcessingLog() {
         return superSignalProcessor->log();
@@ -161,6 +198,7 @@ protected:
     }
 
     void process(signal_type x) {
+        AfcHearingAid hearingAid{superSignalProcessor};
         hearingAid.process(x);
     }
 
@@ -187,6 +225,17 @@ protected:
         AfcHearingAid hearingAid_{std::move(p)};
         hearingAid_.process(x);
         assertEqual(y, x);
+    }
+
+    void setChannels(int c) {
+        superSignalProcessor->setChannels(c);
+    }
+
+    void assertEachComplexSize(gsl::span<SuperSignalProcessor::complex_type>::size_type c) {
+        assertEqual(c, superSignalProcessor->filterbankAnalyzeOutput().size());
+        assertEqual(c, superSignalProcessor->compressChannelInput().size());
+        assertEqual(c, superSignalProcessor->compressChannelOutput().size());
+        assertEqual(c, superSignalProcessor->filterbankSynthesizeInput().size());
     }
 };
 
@@ -232,14 +281,14 @@ public:
 
     void filterbankAnalyze(
         real_type *input,
-        complex_type *,
+        gsl::span<complex_type>,
         int
     ) override {
         *input *= 5;
     }
 
     void filterbankSynthesize(
-        complex_type *,
+        gsl::span<complex_type>,
         real_type *output,
         int
     ) override {
@@ -276,8 +325,8 @@ public:
     }
 
     int chunkSize() override { return chunkSize_; }
-
-    void compressChannel(real_type *, real_type *, int) override {}
+    int channels() override { return {}; }
+    void compressChannel(gsl::span<complex_type>, gsl::span<complex_type>, int) override {}
 };
 
 TEST_F(
@@ -289,5 +338,15 @@ TEST_F(
         { 0.5 },
         { 0.5 * 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23 }
     );
+}
+
+TEST_F(
+    AfcHearingAidTests,
+    intermediateBufferSizeIsTwiceProductOfChannelsAndChunkSize
+) {
+    setChunkSize(3);
+    setChannels(5);
+    process();
+    assertEachComplexSize(2 * 3 * 5);
 }
 }}
