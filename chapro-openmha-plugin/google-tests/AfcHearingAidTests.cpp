@@ -34,13 +34,10 @@ public:
 };
 
 #include "LogString.h"
+#include "assert-utility.h"
 #include <gtest/gtest.h>
 
-namespace hearing_aid::tests { namespace {    
-void assertEqual(const std::string &expected, const std::string &actual) {
-    EXPECT_EQ(expected, actual);
-}
-
+namespace hearing_aid::tests { namespace {
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
 public:
