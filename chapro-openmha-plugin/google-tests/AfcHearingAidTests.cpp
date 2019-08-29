@@ -1,6 +1,7 @@
 #include <gsl/gsl>
 #include <memory>
 
+namespace hearing_aid {
 class SuperSignalProcessor {
 public:
     using real_type = float;
@@ -12,6 +13,7 @@ public:
     virtual void filterbankSynthesize() = 0;
     virtual void compressOutput() = 0;
     virtual void feedbackCancelOutput() = 0;
+    virtual int chunkSize() = 0;
 };
 
 class AfcHearingAid {
@@ -22,7 +24,10 @@ public:
         std::shared_ptr<SuperSignalProcessor> processor
     ) : processor{std::move(processor)} {}
 
-    void process(signal_type) {
+    void process(signal_type signal) {
+        const auto chunkSize = processor->chunkSize();
+        if (signal.size() != chunkSize)
+            return;
         processor->feedbackCancelInput();
         processor->compressInput();
         processor->filterbankAnalyze();
@@ -32,6 +37,7 @@ public:
         processor->feedbackCancelOutput();
     }
 };
+}
 
 #include "LogString.h"
 #include "assert-utility.h"
@@ -40,31 +46,46 @@ public:
 namespace hearing_aid::tests { namespace {
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
+    int chunkSize_;
 public:
     auto &log() const {
         return log_;
     }
 
-    void feedbackCancelInput() {
+    void feedbackCancelInput() override {
         log_.insert("feedbackCancelInput");
     }
-    void compressInput() {
+
+    void compressInput() override {
         log_.insert("compressInput");
     }
-    void filterbankAnalyze() {
+
+    void filterbankAnalyze() override {
         log_.insert("filterbankAnalyze");
     }
-    void compressChannel() {
+
+    void compressChannel() override {
         log_.insert("compressChannel");
     }
-    void filterbankSynthesize() {
+
+    void filterbankSynthesize() override {
         log_.insert("filterbankSynthesize");
     }
-    void compressOutput() {
+
+    void compressOutput() override {
         log_.insert("compressOutput");
     }
-    void feedbackCancelOutput() {
+
+    void feedbackCancelOutput() override {
         log_.insert("feedbackCancelOutput");
+    }
+
+    void setChunkSize(int c) {
+        chunkSize_ = c;
+    }
+
+    int chunkSize() override {
+        return chunkSize_;
     }
 };
 
@@ -80,9 +101,15 @@ protected:
     void process() {
         hearingAid.process({});
     }
+
+    void processUnequalChunk() {
+        superSignalProcessor->setChunkSize(1);
+        std::vector<float> x(2);
+        hearingAid.process(x);
+    }
 };
 
-TEST_F(AfcHearingAidTests, tbd) {
+TEST_F(AfcHearingAidTests, invokesFunctionsInOrder) {
     process();
     assertEqual(
         "feedbackCancelInput"
@@ -94,5 +121,13 @@ TEST_F(AfcHearingAidTests, tbd) {
         "feedbackCancelOutput",
         signalProcessingLog()
     );
+}
+
+TEST_F(
+    AfcHearingAidTests,
+    processDoesNotInvokeWhenFrameCountDoesNotEqualChunkSize
+) {
+    processUnequalChunk();
+    assertTrue(signalProcessingLog().isEmpty());
 }
 }}

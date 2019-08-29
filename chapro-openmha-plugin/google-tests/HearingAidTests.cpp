@@ -4,10 +4,6 @@
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
-void assertTrue(bool c) {
-    EXPECT_TRUE(c);
-}
-
 class FilterbankCompressorSpy : public FilterbankCompressor {
     LogString log_{};
     int chunkSize_ = 1;

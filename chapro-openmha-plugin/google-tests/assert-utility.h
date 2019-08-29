@@ -24,4 +24,8 @@ inline void assertEqual(const std::string &expected, const std::string &actual) 
     EXPECT_EQ(expected, actual);
 }
 
+inline void assertTrue(bool c) {
+    EXPECT_TRUE(c);
+}
+
 #endif
