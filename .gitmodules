@@ -9,4 +9,4 @@
 	url = https://github.com/HoerTech-gGmbH/openMHA
 [submodule "chapro"]
 	path = chapro
-	url = https://github.com/BoysTownorg/chapro
+	url = https://github.com/boystownorg/chapro

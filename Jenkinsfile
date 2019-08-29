@@ -12,26 +12,16 @@ node('master') {
             }
         }
     }
-    
-    stage('mingw build') {
-        node {
-            checkout_scm()
-
-            docker_image('mingw').inside {
-                dir('build') {
-                    cmake_generate_build_with_toolchain('docker/mingw/Toolchain-mingw32.cmake')
-                    cmake_build_target('chapro-openmha-plugin')
-                }
-            }
-        }
-    }
 
     stage('arm-linux-gnueabihf build') {
         node {
             checkout_scm()
 
             docker_image('arm-linux-gnueabihf').inside {
-                execute_command_line('bbb/build')
+                dir('build') {
+                    cmake_generate_build_with_toolchain('docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake')
+                    cmake_build_target('chapro-openmha-plugin')
+                }
             }
         }
     }
