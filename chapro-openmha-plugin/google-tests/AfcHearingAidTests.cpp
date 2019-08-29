@@ -7,12 +7,13 @@ class SuperSignalProcessor {
 public:
     using real_type = float;
     using complex_type = float;
+    using complex_signal_type = gsl::span<complex_type>;
     virtual ~SuperSignalProcessor() = default;
     virtual void feedbackCancelInput(real_type *, real_type *, int) = 0;
     virtual void compressInput(real_type *, real_type *, int) = 0;
-    virtual void filterbankAnalyze(real_type *, gsl::span<complex_type>, int) = 0;
-    virtual void compressChannel(gsl::span<complex_type>, gsl::span<complex_type>, int) = 0;
-    virtual void filterbankSynthesize(gsl::span<complex_type>, real_type *, int) = 0;
+    virtual void filterbankAnalyze(real_type *, complex_signal_type, int) = 0;
+    virtual void compressChannel(complex_signal_type, complex_signal_type, int) = 0;
+    virtual void filterbankSynthesize(complex_signal_type, real_type *, int) = 0;
     virtual void compressOutput(real_type *, real_type *, int) = 0;
     virtual void feedbackCancelOutput(real_type *, int) = 0;
     virtual int chunkSize() = 0;
@@ -58,10 +59,10 @@ public:
 
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
-    gsl::span<complex_type> filterbankSynthesizeInput_;
-    gsl::span<complex_type> compressChannelOutput_;
-    gsl::span<complex_type> compressChannelInput_;
-    gsl::span<complex_type> filterbankAnalyzeOutput_;
+    complex_signal_type filterbankSynthesizeInput_;
+    complex_signal_type compressChannelOutput_;
+    complex_signal_type compressChannelInput_;
+    complex_signal_type filterbankAnalyzeOutput_;
     int chunkSize_;
     int feedbackCancelInputChunkSize_;
     int compressInputChunkSize_;
@@ -130,20 +131,20 @@ public:
         log_.insert("compressInput");
     }
 
-    void filterbankAnalyze(real_type *, gsl::span<complex_type> out, int c) override {
+    void filterbankAnalyze(real_type *, complex_signal_type out, int c) override {
         filterbankAnalyzeOutput_ = out;
         filterbankAnalyzeChunkSize_ = c;
         log_.insert("filterbankAnalyze");
     }
 
-    void compressChannel(gsl::span<complex_type> in, gsl::span<complex_type> out, int c) override {
+    void compressChannel(complex_signal_type in, complex_signal_type out, int c) override {
         compressChannelInput_ = in;
         compressChannelOutput_ = out;
         compressChannelChunkSize_ = c;
         log_.insert("compressChannel");
     }
 
-    void filterbankSynthesize(gsl::span<complex_type> in, real_type *, int c) override {
+    void filterbankSynthesize(complex_signal_type in, real_type *, int c) override {
         filterbankSynthesizeInput_ = in;
         filterbankSynthesizeChunkSize_ = c;
         log_.insert("filterbankSynthesize");
@@ -281,14 +282,14 @@ public:
 
     void filterbankAnalyze(
         real_type *input,
-        gsl::span<complex_type>,
+        complex_signal_type,
         int
     ) override {
         *input *= 5;
     }
 
     void filterbankSynthesize(
-        gsl::span<complex_type>,
+        complex_signal_type,
         real_type *output,
         int
     ) override {
@@ -326,7 +327,7 @@ public:
 
     int chunkSize() override { return chunkSize_; }
     int channels() override { return {}; }
-    void compressChannel(gsl::span<complex_type>, gsl::span<complex_type>, int) override {}
+    void compressChannel(complex_signal_type, complex_signal_type, int) override {}
 };
 
 TEST_F(
