@@ -5,14 +5,15 @@ namespace hearing_aid {
 class SuperSignalProcessor {
 public:
     using real_type = float;
+    using complex_type = float;
     virtual ~SuperSignalProcessor() = default;
-    virtual void feedbackCancelInput(int) = 0;
-    virtual void compressInput(int) = 0;
-    virtual void filterbankAnalyze(int) = 0;
-    virtual void compressChannel(int) = 0;
-    virtual void filterbankSynthesize(int) = 0;
-    virtual void compressOutput(int) = 0;
-    virtual void feedbackCancelOutput(int) = 0;
+    virtual void feedbackCancelInput(real_type *, real_type *, int) = 0;
+    virtual void compressInput(real_type *, real_type *, int) = 0;
+    virtual void filterbankAnalyze(real_type *, complex_type *, int) = 0;
+    virtual void compressChannel(real_type *, real_type *, int) = 0;
+    virtual void filterbankSynthesize(complex_type *, real_type *, int) = 0;
+    virtual void compressOutput(real_type *, real_type *, int) = 0;
+    virtual void feedbackCancelOutput(real_type *, int) = 0;
     virtual int chunkSize() = 0;
 };
 
@@ -28,13 +29,14 @@ public:
         const auto chunkSize = processor->chunkSize();
         if (signal.size() != chunkSize)
             return;
-        processor->feedbackCancelInput(chunkSize);
-        processor->compressInput(chunkSize);
-        processor->filterbankAnalyze(chunkSize);
-        processor->compressChannel(chunkSize);
-        processor->filterbankSynthesize(chunkSize);
-        processor->compressOutput(chunkSize);
-        processor->feedbackCancelOutput(chunkSize);
+        auto signal_ = signal.data();
+        processor->feedbackCancelInput(signal_, signal_, chunkSize);
+        processor->compressInput(signal_, signal_, chunkSize);
+        processor->filterbankAnalyze(signal_, {}, chunkSize);
+        processor->compressChannel(signal_, signal_, chunkSize);
+        processor->filterbankSynthesize({}, signal_, chunkSize);
+        processor->compressOutput(signal_, signal_, chunkSize);
+        processor->feedbackCancelOutput(signal_, chunkSize);
     }
 };
 }
@@ -44,6 +46,11 @@ public:
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
+class SettableChunkSizeSuperSignalProcessor : public virtual SuperSignalProcessor {
+public:
+    virtual void setChunkSize(int) = 0;
+};
+
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
     int chunkSize_;
@@ -87,37 +94,37 @@ public:
         return feedbackCancelOutputChunkSize_;
     }
 
-    void feedbackCancelInput(int c) override {
+    void feedbackCancelInput(real_type *, real_type *, int c) override {
         feedbackCancelInputChunkSize_ = c;
         log_.insert("feedbackCancelInput");
     }
 
-    void compressInput(int c) override {
+    void compressInput(real_type *, real_type *, int c) override {
         compressInputChunkSize_ = c;
         log_.insert("compressInput");
     }
 
-    void filterbankAnalyze(int c) override {
+    void filterbankAnalyze(real_type *, complex_type *, int c) override {
         filterbankAnalyzeChunkSize_ = c;
         log_.insert("filterbankAnalyze");
     }
 
-    void compressChannel(int c) override {
+    void compressChannel(real_type *, real_type *, int c) override {
         compressChannelChunkSize_ = c;
         log_.insert("compressChannel");
     }
 
-    void filterbankSynthesize(int c) override {
+    void filterbankSynthesize(complex_type *, real_type *, int c) override {
         filterbankSynthesizeChunkSize_ = c;
         log_.insert("filterbankSynthesize");
     }
 
-    void compressOutput(int c) override {
+    void compressOutput(real_type *, real_type *, int c) override {
         compressOutputChunkSize_ = c;
         log_.insert("compressOutput");
     }
 
-    void feedbackCancelOutput(int c) override {
+    void feedbackCancelOutput(real_type *, int c) override {
         feedbackCancelOutputChunkSize_ = c;
         log_.insert("feedbackCancelOutput");
     }
@@ -170,6 +177,17 @@ protected:
     void setChunkSize(int c) {
         superSignalProcessor->setChunkSize(c);
     }
+
+    void assertTransformation(
+        std::shared_ptr<SettableChunkSizeSuperSignalProcessor> p,
+        buffer_type x,
+        buffer_type y
+    ) {
+        p->setChunkSize(x.size());
+        AfcHearingAid hearingAid_{std::move(p)};
+        hearingAid_.process(x);
+        assertEqual(y, x);
+    }
 };
 
 TEST_F(AfcHearingAidTests, invokesFunctionsInOrder) {
@@ -198,5 +216,78 @@ TEST_F(AfcHearingAidTests, processPassesChunkSize) {
     setChunkSize(1);
     process();
     assertEachChunkSizeEquals(1);
+}
+
+class MultipliesRealSignalsByPrimes : public SettableChunkSizeSuperSignalProcessor {
+    int chunkSize_;
+public:
+    void compressInput(
+        real_type *input,
+        real_type *output,
+        int
+    ) override {
+        *input *= 2;
+        *output *= 3;
+    }
+
+    void filterbankAnalyze(
+        real_type *input,
+        complex_type *,
+        int
+    ) override {
+        *input *= 5;
+    }
+
+    void filterbankSynthesize(
+        complex_type *,
+        real_type *output,
+        int
+    ) override {
+        *output *= 7;
+    }
+
+    void compressOutput(
+        real_type *input,
+        real_type *output,
+        int
+    ) override {
+        *input *= 11;
+        *output *= 13;
+    }
+
+    void feedbackCancelInput(
+        real_type *input,
+        real_type *output,
+        int
+    ) override {
+        *input *= 17;
+        *output *= 19;
+    }
+
+    void feedbackCancelOutput(
+        real_type *input,
+        int
+    ) override {
+        *input *= 23;
+    }
+
+    void setChunkSize(int c) override {
+        chunkSize_ = c;
+    }
+
+    int chunkSize() override { return chunkSize_; }
+
+    void compressChannel(real_type *, real_type *, int) override {}
+};
+
+TEST_F(
+    AfcHearingAidTests,
+    processPassesRealInputsAppropriately
+) {
+    assertTransformation(
+        std::make_shared<MultipliesRealSignalsByPrimes>(),
+        { 0.5 },
+        { 0.5 * 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23 }
+    );
 }
 }}
