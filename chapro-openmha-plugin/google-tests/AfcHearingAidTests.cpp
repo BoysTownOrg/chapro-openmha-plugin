@@ -232,7 +232,7 @@ protected:
         superSignalProcessor->setChannels(c);
     }
 
-    void assertEachComplexSize(gsl::span<SuperSignalProcessor::complex_type>::size_type c) {
+    void assertEachComplexSize(SuperSignalProcessor::complex_signal_type::size_type c) {
         assertEqual(c, superSignalProcessor->filterbankAnalyzeOutput().size());
         assertEqual(c, superSignalProcessor->compressChannelInput().size());
         assertEqual(c, superSignalProcessor->compressChannelOutput().size());
@@ -241,15 +241,15 @@ protected:
 
     void assertEachComplexBufferEqual() {
         assertEqual(
-            superSignalProcessor->compressChannelInput(), 
+            superSignalProcessor->compressChannelInput(),
             superSignalProcessor->filterbankAnalyzeOutput()
         );
         assertEqual(
-            superSignalProcessor->compressChannelOutput(), 
+            superSignalProcessor->compressChannelOutput(),
             superSignalProcessor->compressChannelInput()
         );
         assertEqual(
-            superSignalProcessor->filterbankSynthesizeInput(), 
+            superSignalProcessor->filterbankSynthesizeInput(),
             superSignalProcessor->compressChannelOutput()
         );
     }
