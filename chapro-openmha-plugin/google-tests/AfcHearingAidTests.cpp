@@ -33,26 +33,13 @@ public:
     }
 };
 
+#include "LogString.h"
 #include <gtest/gtest.h>
 
-namespace {    
+namespace hearing_aid::tests { namespace {    
 void assertEqual(const std::string &expected, const std::string &actual) {
     EXPECT_EQ(expected, actual);
 }
-
-class LogString {
-    std::stringstream s{};
-public:
-    void insert(std::string s_) {
-        s << std::move(s_);
-    }
-
-    bool isEmpty() const {
-        return s.str().empty();
-    }
-    
-    operator std::string() const { return s.str(); }
-};
 
 class SuperSignalProcessorStub : public SuperSignalProcessor {
     LogString log_;
@@ -111,4 +98,4 @@ TEST_F(AfcHearingAidTests, tbd) {
         signalProcessingLog()
     );
 }
-}
+}}

@@ -1,8 +1,9 @@
+#include "LogString.h"
 #include <hearing-aid/HearingAid.h>
 #include <gtest/gtest.h>
 #include <sstream>
 
-namespace {
+namespace hearing_aid::tests { namespace {
     using namespace hearing_aid;
     
     template<typename T>
@@ -28,20 +29,6 @@ namespace {
     void assertTrue(bool c) {
         EXPECT_TRUE(c);
     }
-    
-    class LogString {
-        std::stringstream s{};
-    public:
-        void insert(std::string s_) {
-            s << std::move(s_);
-        }
-
-        bool isEmpty() const {
-            return s.str().empty();
-        }
-        
-        operator std::string() const { return s.str(); }
-    };
 
     class FilterbankCompressorSpy : public FilterbankCompressor {
         LogString log_{};
@@ -342,4 +329,4 @@ namespace {
             compressor->postSynthesizeFilterbankComplexResult()
         );
     }
-}
+}}
