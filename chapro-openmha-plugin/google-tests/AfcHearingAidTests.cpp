@@ -132,7 +132,9 @@ public:
 };
 
 class AfcHearingAidTests : public ::testing::Test {
-    std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor = 
+    using signal_type = AfcHearingAid::signal_type;
+    using buffer_type = std::vector<signal_type::element_type>;
+    std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor =
         std::make_shared<SuperSignalProcessorStub>();
     AfcHearingAid hearingAid{superSignalProcessor};
 protected:
@@ -141,13 +143,17 @@ protected:
     }
 
     void process() {
-        std::vector<float> x(superSignalProcessor->chunkSize());
-        hearingAid.process(x);
+        buffer_type x(superSignalProcessor->chunkSize());
+        process(x);
     }
 
     void processUnequalChunk() {
-        superSignalProcessor->setChunkSize(1);
-        std::vector<float> x(2);
+        setChunkSize(1);
+        buffer_type x(2);
+        process(x);
+    }
+
+    void process(signal_type x) {
         hearingAid.process(x);
     }
 
