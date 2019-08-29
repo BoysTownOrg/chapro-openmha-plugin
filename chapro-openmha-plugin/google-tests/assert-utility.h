@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
 
 template<typename T>
 void assertEqual(const T &expected, const T &actual) {
@@ -14,13 +15,16 @@ void assertEqual(
     const std::vector<T> &expected,
     const std::vector<T> &actual
 ) {
+    assertEqual(expected.size(), actual.size());
     using size_type = typename std::vector<T>::size_type;
-    assertEqual<size_type>(expected.size(), actual.size());
     for (size_type i{ 0 }; i < expected.size(); ++i)
-        assertEqual<T>(expected.at(i), actual.at(i));
+        assertEqual(expected.at(i), actual.at(i));
 }
 
-inline void assertEqual(const std::string &expected, const std::string &actual) {
+inline void assertEqual(
+    const std::string &expected,
+    const std::string &actual
+) {
     EXPECT_EQ(expected, actual);
 }
 
