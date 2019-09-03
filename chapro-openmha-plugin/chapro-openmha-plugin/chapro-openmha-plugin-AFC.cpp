@@ -20,7 +20,6 @@ class Chapro : public hearing_aid::SuperSignalProcessor {
     void *cha_pointer[NPTR]{};
     const int channels_;
     const int chunkSize_;
-    const int windowSize_;
 public:
     explicit Chapro(Parameters);
     ~Chapro() noexcept override;
@@ -29,11 +28,11 @@ public:
     Chapro(const Chapro &) = delete;
     Chapro &operator=(const Chapro &) = delete;
     void feedbackCancelInput(real_type *, real_type *, int) override;
-    void compressInput(real_type * input, real_type * output, int chunkSize) override;
-    void filterbankAnalyze(real_type * input, complex_signal_type output, int chunkSize) override;
-    void compressChannel(complex_signal_type input, complex_signal_type output, int chunkSize) override;
-    void filterbankSynthesize(complex_signal_type input, real_type * output, int chunkSize) override;
-    void compressOutput(real_type * input, real_type * output, int chunkSize) override;
+    void compressInput(real_type *, real_type *, int) override;
+    void filterbankAnalyze(real_type *, complex_signal_type, int) override;
+    void compressChannel(complex_signal_type, complex_signal_type, int) override;
+    void filterbankSynthesize(complex_signal_type, real_type *, int) override;
+    void compressOutput(real_type *, real_type *, int) override;
     void feedbackCancelOutput(real_type *, int) override;
     int chunkSize() override;
     int channels() override;
@@ -41,8 +40,7 @@ public:
 
 Chapro::Chapro(Parameters parameters) :
     channels_{ parameters.channels },
-    chunkSize_{ parameters.chunkSize },
-    windowSize_{ parameters.windowSize }
+    chunkSize_{ parameters.chunkSize }
 {
     CHA_DSL dsl{};
     dsl.attack = parameters.attack_ms;
@@ -72,13 +70,13 @@ Chapro::Chapro(Parameters parameters) :
     wdrc.tk = 105;
     wdrc.cr = 10;
     wdrc.bolt = 105;
-    const auto hamming = 0;
-    float zeros[64];
-    float poles[64];
-    float gain[8];
-    int delay[8];
     int zerosCount = 4;
-    double td = 2.5;
+    auto size_ = 2*channels_*zerosCount;
+    std::vector<float> zeros(size_);
+    std::vector<float> poles(size_);
+    std::vector<float> gain(channels_);
+    std::vector<int> delay(channels_);
+    double ir_delay_ms = 2.5;
     double rho  = 0.3000; // forgetting factor
     double eps  = 0.0008; // power threshold
     double mu  = 0.0002; // step size
@@ -89,8 +87,28 @@ Chapro::Chapro(Parameters parameters) :
     int hdel = 0;      // output/input hardware delay
     // simulation parameters
     double fbg = 1;       // simulated-feedback gain
-    cha_iirfb_design(zeros, poles, gain, delay, dsl.cross_freq, channels_, zerosCount, parameters.sampleRate, td);
-    cha_iirfb_prepare(cha_pointer, zeros, poles, gain, delay, channels_, zerosCount, parameters.sampleRate, chunkSize_);
+    cha_iirfb_design(
+        zeros.data(),
+        poles.data(),
+        gain.data(),
+        delay.data(),
+        dsl.cross_freq,
+        channels_,
+        zerosCount,
+        parameters.sampleRate,
+        ir_delay_ms
+    );
+    cha_iirfb_prepare(
+        cha_pointer,
+        zeros.data(),
+        poles.data(),
+        gain.data(),
+        delay.data(),
+        channels_,
+        zerosCount,
+        parameters.sampleRate,
+        chunkSize_
+    );
     cha_afc_prepare(cha_pointer, mu, rho, eps, afl, wfl, pfl, hdel, fbg, sqm);
     cha_agc_prepare(cha_pointer, &dsl, &wdrc);
 }
@@ -99,27 +117,51 @@ Chapro::~Chapro() noexcept {
     cha_cleanup(cha_pointer);
 }
 
-void Chapro::feedbackCancelInput(real_type *input, real_type *output, int chunkSize) {
+void Chapro::feedbackCancelInput(
+    real_type *input,
+    real_type *output,
+    int chunkSize
+) {
     cha_afc_input(cha_pointer, input, output, chunkSize);
 }
 
-void Chapro::compressInput(float *input, float *output, int chunkSize) {
+void Chapro::compressInput(
+    real_type *input,
+    real_type *output,
+    int chunkSize
+) {
     cha_agc_input(cha_pointer, input, output, chunkSize);
 }
 
-void Chapro::filterbankAnalyze(float *input, complex_signal_type output, int chunkSize) {
+void Chapro::filterbankAnalyze(
+    real_type *input,
+    complex_signal_type output,
+    int chunkSize
+) {
     cha_iirfb_analyze(cha_pointer, input, output.data(), chunkSize);
 }
 
-void Chapro::compressChannel(complex_signal_type input, complex_signal_type output, int chunkSize) {
+void Chapro::compressChannel(
+    complex_signal_type input,
+    complex_signal_type output,
+    int chunkSize
+) {
     cha_agc_channel(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
-void Chapro::filterbankSynthesize(complex_signal_type input, float *output, int chunkSize) {
+void Chapro::filterbankSynthesize(
+    complex_signal_type input,
+    real_type *output,
+    int chunkSize
+) {
     cha_iirfb_synthesize(cha_pointer, input.data(), output, chunkSize);
 }
 
-void Chapro::compressOutput(float *input, float *output, int chunkSize) {
+void Chapro::compressOutput(
+    real_type *input,
+    real_type *output,
+    int chunkSize
+) {
     cha_agc_output(cha_pointer, input, output, chunkSize);
 }
 
@@ -145,7 +187,7 @@ class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
     MHAParser::float_t release;
     MHAParser::float_t maxdB;
     MHAParser::int_t nw;
-    std::unique_ptr<hearing_aid::HearingAid> hearingAid;
+    std::unique_ptr<hearing_aid::AfcHearingAid> hearingAid;
 public:
     ChaproOpenMhaPlugin(
         algo_comm_t &ac,
@@ -174,17 +216,19 @@ public:
         insert_item("maxdB", &maxdB);
         insert_item("nw", &nw);
     }
-    
+
     mha_wave_t *process(mha_wave_t * signal) {
         hearingAid->process({
-            signal->buf, 
-            gsl::narrow<hearing_aid::HearingAid::signal_type::index_type>(signal->num_frames)
+            signal->buf,
+            gsl::narrow<hearing_aid::AfcHearingAid::signal_type::index_type>(
+                signal->num_frames
+            )
         });
         return signal;
     }
-    
+
     void prepare(mhaconfig_t &configuration) override {
-        hearing_aid::FilterbankCompressor::Parameters p;
+        hearing_aid::SuperSignalProcessor::Parameters p;
         p.sampleRate = configuration.srate;
         p.chunkSize = configuration.fragsize;
         p.channels = cross_freq.data.size() + 1;
@@ -201,7 +245,7 @@ public:
             {tkgain.data.begin(), tkgain.data.end()};
         p.kneepoints_dBSpl =
             {tk.data.begin(), tk.data.end()};
-        hearingAid = std::make_unique<hearing_aid::HearingAid>(
+        hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
             std::make_unique<Chapro>(std::move(p))
         );
     }
