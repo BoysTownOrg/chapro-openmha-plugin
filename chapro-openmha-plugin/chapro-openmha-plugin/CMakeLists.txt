@@ -38,8 +38,8 @@ ExternalProject_Add(
 
 add_library(openMHA SHARED IMPORTED)
 set_target_properties(openMHA PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${LIBOPENMHA_NAME})
-target_include_directories(openMHA INTERFACE ${OPENMHA_LIBMHA_DIR}/src)
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${LIBOPENMHA_NAME}
+    INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src)
 
 ExternalProject_Add(
     project_chapro
@@ -53,8 +53,8 @@ ExternalProject_Add(
 
 add_library(chapro STATIC IMPORTED)
 set_target_properties(chapro PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a)
-target_include_directories(chapro INTERFACE ${CMAKE_SOURCE_DIR}/chapro)
+    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro)
 
 add_library(chapro-openmha-plugin SHARED chapro-openmha-plugin.cpp)
 add_dependencies(chapro-openmha-plugin project_chapro)
