@@ -4,7 +4,9 @@
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
-class SettableChunkSizeSuperSignalProcessor : public virtual SuperSignalProcessor {
+class SettableChunkSizeSuperSignalProcessor :
+    public virtual SuperSignalProcessor
+{
 public:
     virtual void setChunkSize(int) = 0;
 };
@@ -184,7 +186,9 @@ protected:
         superSignalProcessor->setChannels(c);
     }
 
-    void assertEachComplexSize(SuperSignalProcessor::complex_signal_type::size_type c) {
+    void assertEachComplexSize(
+        SuperSignalProcessor::complex_signal_type::size_type c
+    ) {
         assertEqual(c, superSignalProcessor->filterbankAnalyzeOutput().size());
         assertEqual(c, superSignalProcessor->compressChannelInput().size());
         assertEqual(c, superSignalProcessor->compressChannelOutput().size());

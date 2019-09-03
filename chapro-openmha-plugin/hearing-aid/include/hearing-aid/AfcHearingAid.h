@@ -28,10 +28,7 @@ class AfcHearingAid {
     std::shared_ptr<SuperSignalProcessor> processor;
 public:
     using signal_type = gsl::span<SuperSignalProcessor::real_type>;
-    explicit AfcHearingAid(
-        std::shared_ptr<SuperSignalProcessor> processor
-    );
-
+    explicit AfcHearingAid(std::shared_ptr<SuperSignalProcessor>);
     void process(signal_type signal);
 };
 }
