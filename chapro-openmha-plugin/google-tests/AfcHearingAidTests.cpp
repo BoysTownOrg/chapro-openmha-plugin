@@ -1,54 +1,6 @@
-#include <gsl/gsl>
-#include <memory>
-#include <vector>
-
-namespace hearing_aid {
-class SuperSignalProcessor {
-public:
-    using real_type = float;
-    using complex_type = float;
-    using complex_signal_type = gsl::span<complex_type>;
-    virtual ~SuperSignalProcessor() = default;
-    virtual void feedbackCancelInput(real_type *, real_type *, int) = 0;
-    virtual void compressInput(real_type *, real_type *, int) = 0;
-    virtual void filterbankAnalyze(real_type *, complex_signal_type, int) = 0;
-    virtual void compressChannel(complex_signal_type, complex_signal_type, int) = 0;
-    virtual void filterbankSynthesize(complex_signal_type, real_type *, int) = 0;
-    virtual void compressOutput(real_type *, real_type *, int) = 0;
-    virtual void feedbackCancelOutput(real_type *, int) = 0;
-    virtual int chunkSize() = 0;
-    virtual int channels() = 0;
-};
-
-class AfcHearingAid {
-    std::vector<SuperSignalProcessor::complex_type> buffer;
-    std::shared_ptr<SuperSignalProcessor> processor;
-public:
-    using signal_type = gsl::span<SuperSignalProcessor::real_type>;
-    explicit AfcHearingAid(
-        std::shared_ptr<SuperSignalProcessor> processor
-    ) :
-        buffer(2 * processor->chunkSize() * processor->channels()),
-        processor{std::move(processor)} {}
-
-    void process(signal_type signal) {
-        const auto chunkSize = processor->chunkSize();
-        if (signal.size() != chunkSize)
-            return;
-        auto signal_ = signal.data();
-        processor->feedbackCancelInput(signal_, signal_, chunkSize);
-        processor->compressInput(signal_, signal_, chunkSize);
-        processor->filterbankAnalyze(signal_, buffer, chunkSize);
-        processor->compressChannel(buffer, buffer, chunkSize);
-        processor->filterbankSynthesize(buffer, signal_, chunkSize);
-        processor->compressOutput(signal_, signal_, chunkSize);
-        processor->feedbackCancelOutput(signal_, chunkSize);
-    }
-};
-}
-
 #include "LogString.h"
 #include "assert-utility.h"
+#include <hearing-aid/AfcHearingAid.h>
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
