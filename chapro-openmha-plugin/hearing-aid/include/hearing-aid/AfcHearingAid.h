@@ -8,6 +8,20 @@
 namespace hearing_aid {
 class SuperSignalProcessor {
 public:
+    struct Parameters {
+        std::vector<double> crossFrequenciesHz;
+        std::vector<double> compressionRatios;
+        std::vector<double> kneepointGains_dB;
+        std::vector<double> kneepoints_dBSpl;
+        std::vector<double> broadbandOutputLimitingThresholds_dBSpl;
+        double attack_ms;
+        double release_ms;
+        double sampleRate;
+        double max_dB_Spl;
+        int windowSize;
+        int chunkSize;
+        int channels;
+    };
     using real_type = float;
     using complex_type = float;
     using complex_signal_type = gsl::span<complex_type>;
