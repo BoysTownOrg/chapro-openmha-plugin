@@ -38,6 +38,12 @@ public:
     int channels() override;
 };
 
+static void copy(const std::vector<double> &source, double *destination) {
+    using size_type = std::vector<double>::size_type;
+    for (size_type i = 0; i < source.size(); ++i)
+        destination[i] = source.at(i);
+}
+
 Chapro::Chapro(Parameters parameters) :
     channels_{ parameters.channels },
     chunkSize_{ parameters.chunkSize }
@@ -46,21 +52,11 @@ Chapro::Chapro(Parameters parameters) :
     dsl.attack = parameters.attack_ms;
     dsl.release = parameters.release_ms;
     dsl.nchannel = channels_;
-    using size_type = std::vector<double>::size_type;
-    for (size_type i = 0; i < parameters.crossFrequenciesHz.size(); ++i)
-        dsl.cross_freq[i] = parameters.crossFrequenciesHz.at(i);
-    for (size_type i = 0; i < parameters.compressionRatios.size(); ++i)
-        dsl.cr[i] = parameters.compressionRatios.at(i);
-    for (size_type i = 0; i < parameters.kneepoints_dBSpl.size(); ++i)
-        dsl.tk[i] = parameters.kneepoints_dBSpl.at(i);
-    for (size_type i = 0; i < parameters.kneepointGains_dB.size(); ++i)
-        dsl.tkgain[i] = parameters.kneepointGains_dB.at(i);
-    for (
-        size_type i = 0;
-        i < parameters.broadbandOutputLimitingThresholds_dBSpl.size();
-        ++i
-    )
-        dsl.bolt[i] = parameters.broadbandOutputLimitingThresholds_dBSpl.at(i);
+    copy(parameters.crossFrequenciesHz, dsl.cross_freq);
+    copy(parameters.compressionRatios, dsl.cr);
+    copy(parameters.kneepoints_dBSpl, dsl.tk);
+    copy(parameters.kneepointGains_dB, dsl.tkgain);
+    copy(parameters.broadbandOutputLimitingThresholds_dBSpl, dsl.bolt);
     CHA_WDRC wdrc;
     wdrc.attack = 1;
     wdrc.release = 50;
@@ -77,16 +73,6 @@ Chapro::Chapro(Parameters parameters) :
     std::vector<float> gain(channels_);
     std::vector<int> delay(channels_);
     double ir_delay_ms = 2.5;
-    double rho  = 0.3000; // forgetting factor
-    double eps  = 0.0008; // power threshold
-    double mu  = 0.0002; // step size
-    int afl  = 100;    // adaptive filter length
-    int sqm  = 1;      // save quality metric ?
-    int wfl  = 0;      // whitening-filter length
-    int pfl  = 0;      // persistent-filter length
-    int hdel = 0;      // output/input hardware delay
-    // simulation parameters
-    double fbg = 1;       // simulated-feedback gain
     cha_iirfb_design(
         zeros.data(),
         poles.data(),
@@ -109,7 +95,18 @@ Chapro::Chapro(Parameters parameters) :
         parameters.sampleRate,
         chunkSize_
     );
-    cha_afc_prepare(cha_pointer, mu, rho, eps, afl, wfl, pfl, hdel, fbg, sqm);
+    cha_afc_prepare(
+        cha_pointer,
+        parameters.filterEstimationStepSize,
+        parameters.filterEstimationForgettingFactor,
+        parameters.filterEstimationPowerThreshold,
+        parameters.adaptiveFeedbackFilterLength,
+        parameters.signalWhiteningFilterLength,
+        parameters.persistentFeedbackFilterLength,
+        parameters.hardwareLatency,
+        parameters.feedbackGain,
+        parameters.saveQualityMetric
+    );
     cha_agc_prepare(cha_pointer, &dsl, &wdrc);
 }
 
@@ -186,7 +183,15 @@ class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
     MHAParser::float_t attack;
     MHAParser::float_t release;
     MHAParser::float_t maxdB;
-    MHAParser::int_t nw;
+    MHAParser::float_t mu;
+    MHAParser::float_t rho;
+    MHAParser::float_t eps;
+    MHAParser::float_t fbg;
+    MHAParser::int_t sqm;
+    MHAParser::int_t afl;
+    MHAParser::int_t wfl;
+    MHAParser::int_t pfl;
+    MHAParser::int_t hdel;
     std::unique_ptr<hearing_aid::AfcHearingAid> hearingAid;
 public:
     ChaproOpenMhaPlugin(
@@ -203,7 +208,15 @@ public:
         attack{"attack time (ms)", "0", "[,]"},
         release{"release time (ms)", "0", "[,]"},
         maxdB{"maximum output (dB SPL)", "0", "[,]"},
-        nw{"window size (samples)", "0", "[,]"}
+        mu{"AFC filter-estimation step size", "0", "[,]"},
+        rho{"AFC filter-estimation forgetting factory", "0", "[,]"},
+        eps{"AFC filter-estimation power threshold", "0", "[,]"},
+        fbg{"simulated-feedback gain", "0", "[,]"},
+        sqm{"option to save quality metric", "0", "[,]"},
+        afl{"length of adaptive-feedback-filter response", "0", "[,]"},
+        wfl{"length of signal-whitening-filter response", "0", "[,]"},
+        pfl{"length of persistent-feedback-filter response", "0", "[,]"},
+        hdel{"output-to-input hardware delay (samples)", "0", "[,]"}
     {
         set_node_id("chapro");
         insert_item("cross_freq", &cross_freq);
@@ -214,7 +227,15 @@ public:
         insert_item("attack", &attack);
         insert_item("release", &release);
         insert_item("maxdB", &maxdB);
-        insert_item("nw", &nw);
+        insert_item("mu", &mu);
+        insert_item("rho", &rho);
+        insert_item("eps", &eps);
+        insert_item("fbg", &fbg);
+        insert_item("sqm", &sqm);
+        insert_item("afl", &afl);
+        insert_item("wfl", &wfl);
+        insert_item("pfl", &pfl);
+        insert_item("hdel", &hdel);
     }
 
     mha_wave_t *process(mha_wave_t * signal) {
@@ -235,7 +256,15 @@ public:
         p.attack_ms = attack.data;
         p.release_ms = release.data;
         p.max_dB_Spl = maxdB.data;
-        p.windowSize = nw.data;
+        p.filterEstimationStepSize = mu.data;
+        p.filterEstimationForgettingFactor = rho.data;
+        p.filterEstimationPowerThreshold = eps.data;
+        p.feedbackGain = fbg.data;
+        p.saveQualityMetric = sqm.data;
+        p.adaptiveFeedbackFilterLength = afl.data;
+        p.signalWhiteningFilterLength = wfl.data;
+        p.persistentFeedbackFilterLength = pfl.data;
+        p.hardwareLatency = hdel.data;
         p.compressionRatios = {cr.data.begin(), cr.data.end()};
         p.broadbandOutputLimitingThresholds_dBSpl =
             {bolt.data.begin(), bolt.data.end()};

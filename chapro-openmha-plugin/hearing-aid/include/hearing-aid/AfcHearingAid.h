@@ -18,7 +18,15 @@ public:
         double release_ms;
         double sampleRate;
         double max_dB_Spl;
-        int windowSize;
+        double filterEstimationStepSize;
+        double filterEstimationForgettingFactor;
+        double filterEstimationPowerThreshold;
+        double feedbackGain;
+        int saveQualityMetric;
+        int adaptiveFeedbackFilterLength;
+        int signalWhiteningFilterLength;
+        int persistentFeedbackFilterLength;
+        int hardwareLatency;
         int chunkSize;
         int channels;
     };
