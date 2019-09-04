@@ -2,22 +2,22 @@ node('master') {
     stage('gcc build and test') {
         node {
             checkout_scm()
-
-            docker_image('gcc').inside {
-                run_inside_directory('build', { compile_all_and_test() })
-            }
+            run_inside_docker_image_directory(
+                'gcc',
+                'build',
+                { compile_all_and_test() }
+            )
         }
     }
 
     stage('arm-linux-gnueabihf build') {
         node {
             checkout_scm()
-
-            docker_image('arm-linux-gnueabihf').inside {
-                dir('build') {
-                    cross_compile_plugins()
-                }
-            }
+            run_inside_docker_image_directory(
+                'arm-linux-gnueabihf',
+                'build',
+                { cross_compile_plugins() }
+            )
         }
     }
 
@@ -25,24 +25,32 @@ node('master') {
         node {
             checkout_scm()
 
-            docker_image('both').inside {
-                dir('build-gcc') {
-                    cmake_generate_build()
-                    build_plugins()
-                }
+            run_inside_docker_image(
+                'both', 
+                {
+                    run_inside_directory(
+                        'build-gcc', 
+                        { 
+                            cmake_generate_build() 
+                            build_plugins()    
+                        }
+                    )
 
-                dir('build-arm-linux') {
-                    cross_compile_plugins()
+                    run_inside_directory(
+                        'build-arm-linux', 
+                        { cross_compile_plugins() }
+                    )
                 }
-            }
+            )
         }
     }
 }
 
-def compile_all_and_test() {
-    cmake_generate_build_with_tests()
-    cmake_build()
-    execute_tests()
+def run_inside_docker_image_directory(image, directory, f) {
+    run_inside_docker_image(
+        image,
+        {run_inside_directory(directory, f)}
+    )
 }
 
 def run_inside_directory(directory, f) {
@@ -55,6 +63,12 @@ def run_inside_docker_image(image, f) {
     docker_image(image).inside {
         f()
     }
+}
+
+def compile_all_and_test() {
+    cmake_generate_build_with_tests()
+    cmake_build()
+    execute_tests()
 }
 
 def cross_compile_plugins() {
