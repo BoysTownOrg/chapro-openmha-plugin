@@ -218,7 +218,6 @@ public:
         pfl{"length of persistent-feedback-filter response", "0", "[,]"},
         hdel{"output-to-input hardware delay (samples)", "0", "[,]"}
     {
-        set_node_id("chapro");
         insert_item("cross_freq", &cross_freq);
         insert_item("cr", &cr);
         insert_item("tk", &tk);

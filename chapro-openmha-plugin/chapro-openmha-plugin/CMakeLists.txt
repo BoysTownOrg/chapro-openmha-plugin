@@ -72,7 +72,7 @@ add_library(chapro-afc-openmha-plugin SHARED chapro-openmha-plugin-AFC.cpp)
 add_dependencies(chapro-afc-openmha-plugin project_chapro)
 add_dependencies(chapro-afc-openmha-plugin project_openMHA)
 set_target_properties(chapro-afc-openmha-plugin PROPERTIES PREFIX "")
-set_target_properties(chapro-afc-openmha-plugin PROPERTIES OUTPUT_NAME "chapro-afc")
+set_target_properties(chapro-afc-openmha-plugin PROPERTIES OUTPUT_NAME "chapro_afc")
 target_compile_options(chapro-afc-openmha-plugin PRIVATE 
     -Wall -Wextra -pedantic -Werror -O3
 )
