@@ -1,19 +1,19 @@
+include(ExternalProject)
+
+set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
+
 function(add_openmha)
-    include(ExternalProject)
-    
     set(OPENMHA_COMPILER_PREFIX "")
-    set(OPENMHA_ARCH "x86_64")
-
+    set(OPENMHA_ARCH x86_64)
     if(${CMAKE_CROSSCOMPILING})
-        set(OPENMHA_COMPILER_PREFIX "arm-linux-gnueabihf-")
-        set(OPENMHA_ARCH "armhf")
+        set(OPENMHA_COMPILER_PREFIX arm-linux-gnueabihf-)
+        set(OPENMHA_ARCH armhf)
     endif()
-
     set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
     set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
-    set(OPENMHA_RELATIVE_BUILD_DIR "build")
-    set(LIBOPENMHA_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
-
+    set(OPENMHA_RELATIVE_BUILD_DIR build)
+    set(OPENMHA_LIBRARY_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
     ExternalProject_Add(
         project_openMHA
         SOURCE_DIR ${OPENMHA_SOURCE_DIR}
@@ -28,25 +28,21 @@ function(add_openmha)
             COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
         INSTALL_COMMAND 
-            cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${LIBOPENMHA_NAME} ${PRIVATE_INSTALL_LIB}
+            cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${OPENMHA_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
     )
-
     add_library(openMHA SHARED IMPORTED)
     set_target_properties(openMHA PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${LIBOPENMHA_NAME}
+        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
         INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
     )
 endfunction()
 
 function(add_chapro)
-    include(ExternalProject)
-
-    set(CHAPRO_MAKEFILE "Makefile")
-
+    set(CHAPRO_MAKEFILE Makefile)
     if(${CMAKE_CROSSCOMPILING})
-        set(CHAPRO_MAKEFILE "makefile.arm")
+        set(CHAPRO_MAKEFILE makefile.arm)
     endif()
-
+    set(CHAPRO_LIBRARY_NAME libchapro.a)
     ExternalProject_Add(
         project_chapro
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
@@ -55,14 +51,13 @@ function(add_chapro)
             chmod +x configure &&
             ./configure &&
             make -f ${CHAPRO_MAKEFILE} clean
-        BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
+        BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
         INSTALL_COMMAND 
-            cp -f libchapro.a ${PRIVATE_INSTALL_LIB}
+            cp -f ${CHAPRO_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
     )
-
     add_library(chapro STATIC IMPORTED)
     set_target_properties(chapro PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a
+        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${CHAPRO_LIBRARY_NAME}
         INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro
     )
 endfunction()
@@ -80,10 +75,12 @@ function(add_openmha_plugin target source plugin)
     install(TARGETS ${target} DESTINATION lib)
 endfunction()
 
-set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
-set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
-file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
-file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
+function(make_directory directory)
+    file(MAKE_DIRECTORY ${directory})
+endfunction()
+
+make_directory(${PRIVATE_INSTALL_PREFIX})
+make_directory(${PRIVATE_INSTALL_LIB})
 
 add_openmha()
 add_chapro()
