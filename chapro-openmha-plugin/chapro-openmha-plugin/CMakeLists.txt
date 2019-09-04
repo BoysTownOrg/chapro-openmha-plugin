@@ -25,7 +25,8 @@ ExternalProject_Add(
     SOURCE_DIR ${OPENMHA_SOURCE_DIR}
     BUILD_IN_SOURCE TRUE
     CONFIGURE_COMMAND 
-        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH}
+        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH} &&
+        make BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR} clean
     BUILD_COMMAND 
         make -C ${OPENMHA_LIBMHA_DIR}
         -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
@@ -45,7 +46,10 @@ ExternalProject_Add(
     project_chapro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
     BUILD_IN_SOURCE TRUE
-    CONFIGURE_COMMAND chmod +x configure && ./configure
+    CONFIGURE_COMMAND 
+        chmod +x configure &&
+        ./configure &&
+        make -f ${CHAPRO_MAKEFILE} clean
     BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
     INSTALL_COMMAND 
         cp -f libchapro.a ${PRIVATE_INSTALL_LIB}
