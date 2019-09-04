@@ -1,25 +1,25 @@
 node('master') {
-    stage('gcc build and test') {
-        node {
-            checkout_scm()
+    run_stage(
+        'gcc build and test', 
+        {
             run_inside_docker_image_directory(
                 'gcc',
                 'build',
                 { compile_all_and_test() }
             )
         }
-    }
+    )
 
-    stage('arm-linux-gnueabihf build') {
-        node {
-            checkout_scm()
+    run_stage(
+        'arm-linux-gnueabihf build',
+        {
             run_inside_docker_image_directory(
                 'arm-linux-gnueabihf',
                 'build',
                 { cross_compile_plugins() }
             )
         }
-    }
+    )
 
     stage('build both') {
         node {
@@ -46,10 +46,19 @@ node('master') {
     }
 }
 
+def run_stage(stage_, f) {
+    stage(stage_) {
+        node {
+            checkout_scm()
+            f()
+        }
+    }
+}
+
 def run_inside_docker_image_directory(image, directory, f) {
     run_inside_docker_image(
         image,
-        {run_inside_directory(directory, f)}
+        { run_inside_directory(directory, f) }
     )
 }
 
