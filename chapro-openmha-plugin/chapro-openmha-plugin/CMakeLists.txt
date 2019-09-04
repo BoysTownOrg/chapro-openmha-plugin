@@ -1,82 +1,88 @@
-set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
-set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
-file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
-file(MAKE_DIRECTORY ${PRIVATE_INSTALL_LIB})
-
-set(OPENMHA_COMPILER_PREFIX "")
-set(OPENMHA_ARCH "x86_64")
-set(CHAPRO_MAKEFILE "Makefile")
-
-if(${CMAKE_CROSSCOMPILING})
-    set(OPENMHA_COMPILER_PREFIX "arm-linux-gnueabihf-")
-    set(CHAPRO_MAKEFILE "makefile.arm")
-    set(OPENMHA_ARCH "armhf")
-endif()
-
-set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
-set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
-set(OPENMHA_RELATIVE_BUILD_DIR "build")
-set(LIBOPENMHA_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
-
 include(ExternalProject)
 
-ExternalProject_Add(
-    project_openMHA
-    SOURCE_DIR ${OPENMHA_SOURCE_DIR}
-    BUILD_IN_SOURCE TRUE
-    CONFIGURE_COMMAND 
-        ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH}
-    BUILD_COMMAND 
-        make -C ${OPENMHA_LIBMHA_DIR}
-        -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
-        DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
-        COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
-        BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
-    INSTALL_COMMAND 
-        cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${LIBOPENMHA_NAME} ${PRIVATE_INSTALL_LIB}
-)
+set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
 
-add_library(openMHA SHARED IMPORTED)
-set_target_properties(openMHA PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${LIBOPENMHA_NAME}
-    INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src)
+function(add_openmha)
+    set(OPENMHA_COMPILER_PREFIX "")
+    set(OPENMHA_ARCH x86_64)
+    if(${CMAKE_CROSSCOMPILING})
+        set(OPENMHA_COMPILER_PREFIX arm-linux-gnueabihf-)
+        set(OPENMHA_ARCH armhf)
+    endif()
+    set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
+    set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
+    set(OPENMHA_RELATIVE_BUILD_DIR build)
+    set(OPENMHA_LIBRARY_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
+    ExternalProject_Add(
+        project_openMHA
+        SOURCE_DIR ${OPENMHA_SOURCE_DIR}
+        BUILD_IN_SOURCE TRUE
+        CONFIGURE_COMMAND 
+            ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH} &&
+            make BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR} clean
+        BUILD_COMMAND 
+            make -C ${OPENMHA_LIBMHA_DIR}
+            -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
+            DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
+            COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
+            BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
+        INSTALL_COMMAND 
+            cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${OPENMHA_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
+    )
+    add_library(openMHA SHARED IMPORTED)
+    set_target_properties(openMHA PROPERTIES 
+        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
+        INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
+    )
+endfunction()
 
-ExternalProject_Add(
-    project_chapro
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
-    BUILD_IN_SOURCE TRUE
-    CONFIGURE_COMMAND chmod +x configure && ./configure
-    BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} libchapro.a
-    INSTALL_COMMAND 
-        cp -f libchapro.a ${PRIVATE_INSTALL_LIB}
-)
+function(add_chapro)
+    set(CHAPRO_MAKEFILE Makefile)
+    if(${CMAKE_CROSSCOMPILING})
+        set(CHAPRO_MAKEFILE makefile.arm)
+    endif()
+    set(CHAPRO_LIBRARY_NAME libchapro.a)
+    ExternalProject_Add(
+        project_chapro
+        SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
+        BUILD_IN_SOURCE TRUE
+        CONFIGURE_COMMAND 
+            chmod +x configure &&
+            ./configure &&
+            make -f ${CHAPRO_MAKEFILE} clean
+        BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
+        INSTALL_COMMAND 
+            cp -f ${CHAPRO_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
+    )
+    add_library(chapro STATIC IMPORTED)
+    set_target_properties(chapro PROPERTIES 
+        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${CHAPRO_LIBRARY_NAME}
+        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro
+    )
+endfunction()
 
-add_library(chapro STATIC IMPORTED)
-set_target_properties(chapro PROPERTIES 
-    IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro)
+function(add_openmha_plugin target source plugin)
+    add_library(${target} SHARED ${source})
+    add_dependencies(${target} project_chapro project_openMHA)
+    set_target_properties(${target} PROPERTIES PREFIX "")
+    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${plugin})
+    target_compile_options(${target} PRIVATE 
+        -Wall -Wextra -pedantic -Werror -O3
+    )
+    target_compile_features(${target} PRIVATE cxx_std_17)
+    target_link_libraries(${target} hearing-aid openMHA chapro GSL)
+    install(TARGETS ${target} DESTINATION lib)
+endfunction()
 
-add_library(chapro-openmha-plugin SHARED chapro-openmha-plugin.cpp)
-add_dependencies(chapro-openmha-plugin project_chapro)
-add_dependencies(chapro-openmha-plugin project_openMHA)
-set_target_properties(chapro-openmha-plugin PROPERTIES PREFIX "")
-set_target_properties(chapro-openmha-plugin PROPERTIES OUTPUT_NAME "chapro")
-target_compile_options(chapro-openmha-plugin PRIVATE 
-    -Wall -Wextra -pedantic -Werror -O3
-)
-target_compile_features(chapro-openmha-plugin PRIVATE cxx_std_17)
-target_link_libraries(chapro-openmha-plugin hearing-aid openMHA chapro GSL)
-install(TARGETS chapro-openmha-plugin DESTINATION lib)
+function(make_directory directory)
+    file(MAKE_DIRECTORY ${directory})
+endfunction()
 
-add_library(chapro-afc-openmha-plugin SHARED chapro-openmha-plugin-AFC.cpp)
-add_dependencies(chapro-afc-openmha-plugin project_chapro)
-add_dependencies(chapro-afc-openmha-plugin project_openMHA)
-set_target_properties(chapro-afc-openmha-plugin PROPERTIES PREFIX "")
-set_target_properties(chapro-afc-openmha-plugin PROPERTIES OUTPUT_NAME "chapro_afc")
-target_compile_options(chapro-afc-openmha-plugin PRIVATE 
-    -Wall -Wextra -pedantic -Werror -O3
-)
-target_compile_features(chapro-afc-openmha-plugin PRIVATE cxx_std_17)
-target_link_libraries(chapro-afc-openmha-plugin hearing-aid openMHA chapro GSL)
-install(TARGETS chapro-afc-openmha-plugin DESTINATION lib)
+make_directory(${PRIVATE_INSTALL_PREFIX})
+make_directory(${PRIVATE_INSTALL_LIB})
 
+add_openmha()
+add_chapro()
+add_openmha_plugin(chapro-openmha-plugin chapro-openmha-plugin.cpp chapro)
+add_openmha_plugin(chapro-afc-openmha-plugin chapro-openmha-plugin-AFC.cpp chapro_afc)
