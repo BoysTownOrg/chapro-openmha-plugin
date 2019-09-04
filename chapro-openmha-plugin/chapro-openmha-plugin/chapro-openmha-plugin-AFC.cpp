@@ -21,7 +21,7 @@ class Chapro : public hearing_aid::SuperSignalProcessor {
     const int channels_;
     const int chunkSize_;
 public:
-    explicit Chapro(Parameters);
+    explicit Chapro(const Parameters &);
     ~Chapro() noexcept override;
     Chapro(Chapro &&) = delete;
     Chapro &operator=(Chapro &&) = delete;
@@ -44,7 +44,7 @@ static void copy(const std::vector<double> &source, double *destination) {
         destination[i] = source.at(i);
 }
 
-Chapro::Chapro(Parameters parameters) :
+Chapro::Chapro(const Parameters &parameters) :
     channels_{ parameters.channels },
     chunkSize_{ parameters.chunkSize }
 {
@@ -275,7 +275,7 @@ public:
         p.kneepoints_dBSpl =
             {tk.data.begin(), tk.data.end()};
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
-            std::make_unique<Chapro>(std::move(p))
+            std::make_unique<Chapro>(p)
         );
     }
 };
