@@ -68,3 +68,15 @@ target_compile_features(chapro-openmha-plugin PRIVATE cxx_std_17)
 target_link_libraries(chapro-openmha-plugin hearing-aid openMHA chapro GSL)
 install(TARGETS chapro-openmha-plugin DESTINATION lib)
 
+add_library(chapro-afc-openmha-plugin SHARED chapro-openmha-plugin-AFC.cpp)
+add_dependencies(chapro-afc-openmha-plugin project_chapro)
+add_dependencies(chapro-afc-openmha-plugin project_openMHA)
+set_target_properties(chapro-afc-openmha-plugin PROPERTIES PREFIX "")
+set_target_properties(chapro-afc-openmha-plugin PROPERTIES OUTPUT_NAME "chapro_afc")
+target_compile_options(chapro-afc-openmha-plugin PRIVATE 
+    -Wall -Wextra -pedantic -Werror -O3
+)
+target_compile_features(chapro-afc-openmha-plugin PRIVATE cxx_std_17)
+target_link_libraries(chapro-afc-openmha-plugin hearing-aid openMHA chapro GSL)
+install(TARGETS chapro-afc-openmha-plugin DESTINATION lib)
+
