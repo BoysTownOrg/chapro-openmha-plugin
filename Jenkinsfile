@@ -19,13 +19,36 @@ node('master') {
 
             docker_image('arm-linux-gnueabihf').inside {
                 dir('build') {
-                    cmake_generate_build_with_toolchain('docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake')
-                    cmake_build_target('chapro-openmha-plugin')
-                    cmake_build_target('chapro-afc-openmha-plugin')
+                    cross_compile_plugins()
                 }
             }
         }
     }
+
+    stage('build both') {
+        node {
+            checkout_scm()
+
+            docker_image('both').inside {
+                dir('build-gcc') {
+                    cmake_generate_build()
+                    cmake_build()
+                }
+
+                dir('build-arm-linux') {
+                    cross_compile_plugins()
+                }
+            }
+        }
+    }
+}
+
+def cross_compile_plugins() {
+    cmake_generate_build_with_toolchain(
+        'docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake'
+    )
+    cmake_build_target('chapro-openmha-plugin')
+    cmake_build_target('chapro-afc-openmha-plugin')
 }
 
 def checkout_scm() {
@@ -36,7 +59,7 @@ def cmake_generate_build_with_tests() {
     cmake_generate_build('-DENABLE_TESTS=ON')
 }
 
-def cmake_generate_build(flags) {
+def cmake_generate_build(flags = '') {
     execute_command_line('cmake ' + flags + ' ..')
 }
 
