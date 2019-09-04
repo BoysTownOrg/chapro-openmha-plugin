@@ -1,3 +1,17 @@
+function(add_openmha_plugin target source plugin)
+    add_library(${target} SHARED ${source})
+    add_dependencies(${target} project_chapro)
+    add_dependencies(${target} project_openMHA)
+    set_target_properties(${target} PROPERTIES PREFIX "")
+    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${plugin})
+    target_compile_options(${target} PRIVATE 
+        -Wall -Wextra -pedantic -Werror -O3
+    )
+    target_compile_features(${target} PRIVATE cxx_std_17)
+    target_link_libraries(${target} hearing-aid openMHA chapro GSL)
+    install(TARGETS ${target} DESTINATION lib)
+endfunction()
+
 set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
 file(MAKE_DIRECTORY ${PRIVATE_INSTALL_PREFIX})
@@ -60,27 +74,5 @@ set_target_properties(chapro PROPERTIES
     IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/libchapro.a
     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro)
 
-add_library(chapro-openmha-plugin SHARED chapro-openmha-plugin.cpp)
-add_dependencies(chapro-openmha-plugin project_chapro)
-add_dependencies(chapro-openmha-plugin project_openMHA)
-set_target_properties(chapro-openmha-plugin PROPERTIES PREFIX "")
-set_target_properties(chapro-openmha-plugin PROPERTIES OUTPUT_NAME "chapro")
-target_compile_options(chapro-openmha-plugin PRIVATE 
-    -Wall -Wextra -pedantic -Werror -O3
-)
-target_compile_features(chapro-openmha-plugin PRIVATE cxx_std_17)
-target_link_libraries(chapro-openmha-plugin hearing-aid openMHA chapro GSL)
-install(TARGETS chapro-openmha-plugin DESTINATION lib)
-
-add_library(chapro-afc-openmha-plugin SHARED chapro-openmha-plugin-AFC.cpp)
-add_dependencies(chapro-afc-openmha-plugin project_chapro)
-add_dependencies(chapro-afc-openmha-plugin project_openMHA)
-set_target_properties(chapro-afc-openmha-plugin PROPERTIES PREFIX "")
-set_target_properties(chapro-afc-openmha-plugin PROPERTIES OUTPUT_NAME "chapro_afc")
-target_compile_options(chapro-afc-openmha-plugin PRIVATE 
-    -Wall -Wextra -pedantic -Werror -O3
-)
-target_compile_features(chapro-afc-openmha-plugin PRIVATE cxx_std_17)
-target_link_libraries(chapro-afc-openmha-plugin hearing-aid openMHA chapro GSL)
-install(TARGETS chapro-afc-openmha-plugin DESTINATION lib)
-
+add_openmha_plugin(chapro-openmha-plugin chapro-openmha-plugin.cpp chapro)
+add_openmha_plugin(chapro-afc-openmha-plugin chapro-openmha-plugin-AFC.cpp chapro_afc)
