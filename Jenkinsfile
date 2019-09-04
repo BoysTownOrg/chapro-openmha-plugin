@@ -4,7 +4,7 @@ node('master') {
             checkout_scm()
 
             docker_image('gcc').inside {
-                run_inside_directory('build', compile_all_and_test)
+                run_inside_directory('build', { compile_all_and_test() })
             }
         }
     }
