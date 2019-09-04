@@ -21,6 +21,7 @@ node('master') {
                 dir('build') {
                     cmake_generate_build_with_toolchain('docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake')
                     cmake_build_target('chapro-openmha-plugin')
+                    cmake_build_target('chapro-afc-openmha-plugin')
                 }
             }
         }
