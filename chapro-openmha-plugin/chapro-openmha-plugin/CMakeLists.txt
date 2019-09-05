@@ -66,7 +66,10 @@ function(add_openmha_plugin target source plugin)
     add_library(${target} SHARED ${source})
     add_dependencies(${target} project_chapro project_openMHA)
     set_target_properties(${target} PROPERTIES PREFIX "")
-    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${plugin})
+    set_target_properties(${target} PROPERTIES 
+        OUTPUT_NAME ${plugin}
+        SKIP_BUILD_RPATH TRUE
+    )
     target_compile_options(${target} PRIVATE 
         -Wall -Wextra -pedantic -Werror -O3
     )
