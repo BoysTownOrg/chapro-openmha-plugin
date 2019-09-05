@@ -30,6 +30,7 @@ cmd=start
 ```
 # Cross-compiling plugins for ARM
 ```
+cd chapro-openmha-plugin
 mkdir build-ARM
 cd build-ARM
 cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-arm-linux-gnueabihf.cmake ..
