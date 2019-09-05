@@ -1,51 +1,99 @@
 node('master') {
-    stage('gcc build and test') {
-        node {
-            checkout_scm()
+    run_stage_inside_docker_image_generic_build_directory(
+        'gcc build all and test', 
+        'gcc',
+        { compile_all_and_test() }
+    )
 
-            docker_image('gcc').inside {
-                dir('build') {
-                    cmake_generate_build_with_tests()
-                    cmake_build()
-                    execute_tests()
+    run_stage_inside_docker_image_generic_build_directory(
+        'arm-linux-gnueabihf build plugins',
+        'arm-linux-gnueabihf',
+        { cross_compile_plugins() }
+    )
+
+    run_stage(
+        'gcc build all and arm-linux-gnueabihf build plugins', 
+        {
+            run_inside_docker_image(
+                'both',
+                {
+                    run_inside_directory(
+                        'build-gcc', 
+                        { 
+                            cmake_generate_build() 
+                            build_plugins()    
+                        }
+                    )
+
+                    run_inside_directory(
+                        'build-arm-linux', 
+                        { cross_compile_plugins() }
+                    )
                 }
-            }
+            )
         }
-    }
+    )
+}
 
-    stage('arm-linux-gnueabihf build') {
+def run_stage_inside_docker_image_generic_build_directory(stage_, image, f) {
+    run_stage_inside_docker_image_directory(stage_, image, 'build', f)
+}
+
+def run_stage_inside_docker_image_directory(stage_, image, directory, f) {
+    run_stage(
+        stage_,
+        { run_inside_docker_image_directory(image, directory, f) }
+    )
+}
+
+def run_stage(stage_, f) {
+    stage(stage_) {
         node {
-            checkout_scm()
-
-            docker_image('arm-linux-gnueabihf').inside {
-                dir('build') {
-                    cmake_generate_build_with_toolchain('docker/arm-linux-gnueabihf/Toolchain-arm-linux-gnueabihf.cmake')
-                    cmake_build_target('chapro-openmha-plugin')
-                    cmake_build_target('chapro-afc-openmha-plugin')
-                }
-            }
+            checkout scm
+            f()
         }
     }
 }
 
-def checkout_scm() {
-    checkout scm
+def run_inside_docker_image_directory(image, directory, f) {
+    run_inside_docker_image(
+        image,
+        { run_inside_directory(directory, f) }
+    )
+}
+
+def run_inside_directory(directory, f) {
+    dir(directory) {
+        f()
+    }
+}
+
+def run_inside_docker_image(image, f) {
+    docker_image(image).inside {
+        f()
+    }
+}
+
+def docker_image(compiler) {
+    return docker.build(compiler, './docker/' + compiler)
+}
+
+def compile_all_and_test() {
+    cmake_generate_build_with_tests()
+    cmake_build()
+    execute_tests()
 }
 
 def cmake_generate_build_with_tests() {
     cmake_generate_build('-DENABLE_TESTS=ON')
 }
 
-def cmake_generate_build(flags) {
+def cmake_generate_build(flags = '') {
     execute_command_line('cmake ' + flags + ' ..')
 }
 
-def cmake_generate_build_with_toolchain(toolchain) {
-    cmake_generate_build('-DCMAKE_TOOLCHAIN_FILE=../' + toolchain)
-}
-
-def cmake_build_target(target) {
-    cmake_build('--target ' + target)
+def execute_command_line(what) {
+    sh what
 }
 
 def cmake_build(flags = '') {
@@ -56,10 +104,20 @@ def execute_tests() {
     execute_command_line('ctest')
 }
 
-def execute_command_line(what) {
-    sh what
+def cross_compile_plugins() {
+    cmake_generate_build_with_toolchain('Toolchain-arm-linux-gnueabihf.cmake')
+    build_plugins()
 }
 
-def docker_image(compiler) {
-    return docker.build(compiler, './docker/' + compiler)
+def cmake_generate_build_with_toolchain(toolchain) {
+    cmake_generate_build('-DCMAKE_TOOLCHAIN_FILE=../' + toolchain)
+}
+
+def build_plugins() {
+    cmake_build_target('chapro-openmha-plugin')
+    cmake_build_target('chapro-afc-openmha-plugin')
+}
+
+def cmake_build_target(target) {
+    cmake_build('--target ' + target)
 }
