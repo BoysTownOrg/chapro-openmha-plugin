@@ -28,3 +28,11 @@ mha --interactive
 ?read:chapro.cfg
 cmd=start
 ```
+# Cross-compiling plugins for ARM
+```
+mkdir build-ARM
+cd build-ARM
+cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-arm-linux-gnueabihf.cmake ..
+cmake --build . --target chapro-openmha-plugin
+cmake --build . --target chapro-afc-openmha-plugin
+```
