@@ -3,7 +3,7 @@ include ../../magic.mk
 
 libmha = lib$(MHATOOLBOX_NAME)
 
-TARGETS=$(libmha)$(DYNAMIC_LIB_EXT)
+TARGETS=$(libmha).a
 
 include ../../rules.mk
 
@@ -11,4 +11,5 @@ OBJECTS = \
 	mha_parser.o mha_error.o mha_errno.o \
 	mha_events.o mha_os.o
 
-$(BUILD_DIR)/$(libmha)$(DYNAMIC_LIB_EXT): $(OBJECTS:%.o=$(BUILD_DIR)/%.o)
+$(BUILD_DIR)/$(libmha).a: $(OBJECTS:%.o=$(BUILD_DIR)/%.o)
+	$(COMPILERPREFIX)ar -rucs $$PWD/$@ $^
