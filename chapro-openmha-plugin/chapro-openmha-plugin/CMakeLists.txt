@@ -1,7 +1,15 @@
 include(ExternalProject)
 
-set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/external-project-install)
 set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
+
+function(add_external_static_target target location include_dir)
+    add_library(${target} STATIC IMPORTED)
+    set_target_properties(${target} PROPERTIES 
+        IMPORTED_LOCATION ${location}
+        INTERFACE_INCLUDE_DIRECTORIES ${include_dir}
+    )
+endfunction()
 
 function(add_openmha)
     set(OPENMHA_COMPILER_PREFIX "")
@@ -29,10 +37,10 @@ function(add_openmha)
         INSTALL_COMMAND 
             cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${OPENMHA_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
     )
-    add_library(openMHA STATIC IMPORTED)
-    set_target_properties(openMHA PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
+    add_external_static_target(
+        openMHA 
+        ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME} 
+        ${OPENMHA_LIBMHA_DIR}/src
     )
 endfunction()
 
@@ -54,18 +62,18 @@ function(add_chapro)
         INSTALL_COMMAND 
             cp -f ${CHAPRO_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
     )
-    add_library(chapro STATIC IMPORTED)
-    set_target_properties(chapro PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${CHAPRO_LIBRARY_NAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro
+    add_external_static_target(
+        chapro 
+        ${PRIVATE_INSTALL_LIB}/${CHAPRO_LIBRARY_NAME} 
+        ${CMAKE_SOURCE_DIR}/chapro
     )
 endfunction()
 
 function(add_openmha_plugin target source plugin)
     add_library(${target} SHARED ${source})
     add_dependencies(${target} project_chapro project_openMHA)
-    set_target_properties(${target} PROPERTIES PREFIX "")
     set_target_properties(${target} PROPERTIES 
+        PREFIX ""
         OUTPUT_NAME ${plugin}
         SKIP_BUILD_RPATH TRUE
     )
