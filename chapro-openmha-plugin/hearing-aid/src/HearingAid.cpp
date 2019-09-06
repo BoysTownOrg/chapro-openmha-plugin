@@ -14,10 +14,10 @@ void HearingAid::process(signal_type signal) {
     if (signal.size() != chunkSize)
         return;
     auto signal_ = signal.data();
-    compressor->compressInput(signal_, signal_, chunkSize);
-    compressor->analyzeFilterbank(signal_, buffer, chunkSize);
+    compressor->compressInput(signal_, signal_, signal, signal, chunkSize);
+    compressor->analyzeFilterbank(signal, signal_, buffer, chunkSize);
     compressor->compressChannels(buffer, buffer, chunkSize);
-    compressor->synthesizeFilterbank(buffer, signal_, chunkSize);
-    compressor->compressOutput(signal_, signal_, chunkSize);
+    compressor->synthesizeFilterbank(buffer, signal_, signal, chunkSize);
+    compressor->compressOutput(signal_, signal_, signal, signal, chunkSize);
 }
 }
