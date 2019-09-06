@@ -107,20 +107,20 @@ protected:
         buffer_type x(compressor->chunkSize() + 1);
         process(x);
     }
-    
+
     void process() {
         buffer_type x(compressor->chunkSize());
         process(x);
     }
-    
+
     void process(signal_type x) {
         process(hearingAid, x);
     }
-    
+
     void process(HearingAid &hearingAid, signal_type x) {
         hearingAid.process(x);
     }
-    
+
     auto &compressorLog() {
         return compressor->log();
     }
