@@ -39,8 +39,7 @@ function(add_openmha)
         INSTALL_COMMAND
             cp -f ${OPENMHA_LIBRARY} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
-    add_external_static_target(
-        openMHA
+    add_external_static_target(openMHA
         ${OPENMHA_LIBRARY_NAME}
         ${OPENMHA_LIBMHA_DIR}/src
     )
@@ -64,8 +63,7 @@ function(add_chapro)
         INSTALL_COMMAND
             cp -f ${CHAPRO_LIBRARY_NAME} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
-    add_external_static_target(
-        chapro
+    add_external_static_target(chapro
         ${CHAPRO_LIBRARY_NAME}
         ${CMAKE_SOURCE_DIR}/chapro
     )
@@ -79,8 +77,8 @@ function(add_openmha_plugin target source plugin)
         OUTPUT_NAME ${plugin}
         SKIP_BUILD_RPATH TRUE
     )
-    target_compile_options(${target} PRIVATE 
-        -Wall -Wextra -pedantic -Werror -O3
+    target_compile_options(${target} 
+        PRIVATE -Wall -Wextra -pedantic -Werror -O3
     )
     target_compile_features(${target} PRIVATE cxx_std_17)
     target_link_libraries(${target} hearing-aid openMHA chapro GSL)
@@ -96,13 +94,11 @@ make_directory(${EXTERNAL_PROJECT_LIBRARY_DIR})
 
 add_openmha()
 add_chapro()
-add_openmha_plugin(
-    chapro-openmha-plugin 
+add_openmha_plugin(chapro-openmha-plugin 
     chapro-openmha-plugin.cpp 
     chapro
 )
-add_openmha_plugin(
-    chapro-afc-openmha-plugin 
+add_openmha_plugin(chapro-afc-openmha-plugin 
     chapro-openmha-plugin-AFC.cpp 
     chapro_afc
 )
