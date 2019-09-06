@@ -1,7 +1,15 @@
 include(ExternalProject)
 
-set(PRIVATE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
-set(PRIVATE_INSTALL_LIB ${PRIVATE_INSTALL_PREFIX}/lib)
+set(EXTERNAL_PROJECT_INSTALL_DIR ${CMAKE_BINARY_DIR}/external-project-install)
+set(EXTERNAL_PROJECT_LIBRARY_DIR ${EXTERNAL_PROJECT_INSTALL_DIR}/lib)
+
+function(add_external_static_target target library_name include_dir)
+    add_library(${target} STATIC IMPORTED)
+    set_target_properties(${target} PROPERTIES 
+        IMPORTED_LOCATION ${EXTERNAL_PROJECT_LIBRARY_DIR}/${library_name}
+        INTERFACE_INCLUDE_DIRECTORIES ${include_dir}
+    )
+endfunction()
 
 function(add_openmha)
     set(OPENMHA_COMPILER_PREFIX "")
@@ -14,25 +22,26 @@ function(add_openmha)
     set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
     set(OPENMHA_RELATIVE_BUILD_DIR build)
     set(OPENMHA_LIBRARY_NAME libopenmha.a)
+    set(OPENMHA_BUILD_DIR ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR})
+    set(OPENMHA_LIBRARY ${OPENMHA_BUILD_DIR}/${OPENMHA_LIBRARY_NAME})
     ExternalProject_Add(
         project_openMHA
         SOURCE_DIR ${OPENMHA_SOURCE_DIR}
         BUILD_IN_SOURCE TRUE
-        CONFIGURE_COMMAND 
+        CONFIGURE_COMMAND
             ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH} &&
             make BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR} clean
-        BUILD_COMMAND 
+        BUILD_COMMAND
             make -C ${OPENMHA_LIBMHA_DIR}
             -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
             COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
-        INSTALL_COMMAND 
-            cp -f ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR}/${OPENMHA_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
+        INSTALL_COMMAND
+            cp -f ${OPENMHA_LIBRARY} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
-    add_library(openMHA STATIC IMPORTED)
-    set_target_properties(openMHA PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
+    add_external_static_target(openMHA
+        ${OPENMHA_LIBRARY_NAME}
+        ${OPENMHA_LIBMHA_DIR}/src
     )
 endfunction()
 
@@ -46,31 +55,30 @@ function(add_chapro)
         project_chapro
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
         BUILD_IN_SOURCE TRUE
-        CONFIGURE_COMMAND 
+        CONFIGURE_COMMAND
             chmod +x configure &&
             ./configure &&
             make -f ${CHAPRO_MAKEFILE} clean
         BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
-        INSTALL_COMMAND 
-            cp -f ${CHAPRO_LIBRARY_NAME} ${PRIVATE_INSTALL_LIB}
+        INSTALL_COMMAND
+            cp -f ${CHAPRO_LIBRARY_NAME} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
-    add_library(chapro STATIC IMPORTED)
-    set_target_properties(chapro PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${CHAPRO_LIBRARY_NAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/chapro
+    add_external_static_target(chapro
+        ${CHAPRO_LIBRARY_NAME}
+        ${CMAKE_SOURCE_DIR}/chapro
     )
 endfunction()
 
 function(add_openmha_plugin target source plugin)
     add_library(${target} SHARED ${source})
     add_dependencies(${target} project_chapro project_openMHA)
-    set_target_properties(${target} PROPERTIES PREFIX "")
     set_target_properties(${target} PROPERTIES 
+        PREFIX ""
         OUTPUT_NAME ${plugin}
         SKIP_BUILD_RPATH TRUE
     )
-    target_compile_options(${target} PRIVATE 
-        -Wall -Wextra -pedantic -Werror -O3
+    target_compile_options(${target} 
+        PRIVATE -Wall -Wextra -pedantic -Werror -O3
     )
     target_compile_features(${target} PRIVATE cxx_std_17)
     target_link_libraries(${target} hearing-aid openMHA chapro GSL)
@@ -81,10 +89,16 @@ function(make_directory directory)
     file(MAKE_DIRECTORY ${directory})
 endfunction()
 
-make_directory(${PRIVATE_INSTALL_PREFIX})
-make_directory(${PRIVATE_INSTALL_LIB})
+make_directory(${EXTERNAL_PROJECT_INSTALL_DIR})
+make_directory(${EXTERNAL_PROJECT_LIBRARY_DIR})
 
 add_openmha()
 add_chapro()
-add_openmha_plugin(chapro-openmha-plugin chapro-openmha-plugin.cpp chapro)
-add_openmha_plugin(chapro-afc-openmha-plugin chapro-openmha-plugin-AFC.cpp chapro_afc)
+add_openmha_plugin(chapro-openmha-plugin 
+    chapro-openmha-plugin.cpp 
+    chapro
+)
+add_openmha_plugin(chapro-afc-openmha-plugin 
+    chapro-openmha-plugin-AFC.cpp 
+    chapro_afc
+)
