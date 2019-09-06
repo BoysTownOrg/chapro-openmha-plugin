@@ -49,7 +49,6 @@ public:
 
     void analyzeFilterbank(
         real_type *,
-        complex_type *,
         complex_signal_type s,
         int chunkSize
     ) override {
@@ -59,8 +58,6 @@ public:
     }
 
     void compressChannels(
-        complex_type *,
-        complex_type *,
         complex_signal_type a,
         complex_signal_type b,
         int chunkSize
@@ -73,7 +70,6 @@ public:
 
     void synthesizeFilterbank(
         complex_signal_type s,
-        complex_type *,
         real_type *,
         int chunkSize
     ) override {
@@ -238,7 +234,6 @@ public:
 
     void analyzeFilterbank(
         real_type *input,
-        complex_type *,
         complex_signal_type,
         int
     ) override {
@@ -247,7 +242,6 @@ public:
 
     void synthesizeFilterbank(
         complex_signal_type,
-        complex_type *,
         real_type *output,
         int
     ) override {
@@ -265,7 +259,7 @@ public:
 
     int chunkSize() override { return 1; }
     int channels() override { return 1; }
-    void compressChannels(complex_type *, complex_type *, complex_signal_type, complex_signal_type, int) override {}
+    void compressChannels(complex_signal_type, complex_signal_type, int) override {}
 };
 
 TEST_F(
@@ -278,102 +272,6 @@ TEST_F(
     buffer_type x = { 4 };
     process(hearingAid, x);
     assertEqual({ 4 * 2 * 3 * 5 * 7 * 11 * 13 }, x);
-}
-
-class ForComplexSignalTests : public FilterbankCompressor {
-    complex_type postSynthesizeFilterbankComplexResult_{};
-    int chunkSize_{ 1 };
-    int channels_{ 1 };
-    int pointerOffset_{};
-public:
-    void analyzeFilterbank(
-        real_type *,
-        complex_type *output,
-        complex_signal_type,
-        int
-    ) override {
-        *(output + pointerOffset_) += 7;
-        *(output + pointerOffset_) *= 11;
-    }
-
-    void compressChannels(
-        complex_type *input,
-        complex_type *output,
-        complex_signal_type,
-        complex_signal_type,
-        int
-    ) override {
-        *(input + pointerOffset_) *= 13;
-        *(output + pointerOffset_) *= 17;
-    }
-
-    void synthesizeFilterbank(
-        complex_signal_type,
-        complex_type *input,
-        real_type *,
-        int
-    ) override {
-        *(input + pointerOffset_) *= 19;
-        postSynthesizeFilterbankComplexResult_ = *(input + pointerOffset_);
-    }
-
-    int chunkSize() override {
-        return chunkSize_;
-    }
-
-    int channels() override {
-        return channels_;
-    }
-
-    void setChunkSize(int s) {
-        chunkSize_ = s;
-    }
-
-    void setChannels(int c) {
-        channels_ = c;
-    }
-
-    void setPointerOffset(int offset) {
-        pointerOffset_ = offset;
-    }
-
-    complex_type postSynthesizeFilterbankComplexResult() const {
-        return postSynthesizeFilterbankComplexResult_;
-    }
-
-    void compressInput(real_type *, real_type *, int) override {}
-    void compressOutput(real_type *, real_type *, int) override {}
-};
-
-TEST_F(
-    HearingAidTests,
-    processPassesComplexInputsAppropriately
-) {
-    auto compressor = std::make_shared<ForComplexSignalTests>();
-    HearingAid hearingAid{compressor};
-    buffer_type x(1);
-    process(hearingAid, x);
-    assertEqual(
-        (0 + 7) * 11 * 13 * 17 * 19.0f,
-        compressor->postSynthesizeFilterbankComplexResult()
-    );
-}
-
-TEST_F(
-    HearingAidTests,
-    complexInputSizeIsAtLeastChannelTimesChunkSizeTimesTwo
-) {
-    auto compressor = std::make_shared<ForComplexSignalTests>();
-    compressor->setChunkSize(4);
-    compressor->setChannels(5);
-    HearingAid hearingAid{compressor};
-    compressor->setPointerOffset(4 * 5 * 2 - 1);
-    buffer_type x(4);
-    process(hearingAid, x);
-    assertEqual(
-        (0 + 7) * 11 * 13 * 17 * 19.0f,
-        compressor->postSynthesizeFilterbankComplexResult()
-    );
 }
 
 TEST_F(
