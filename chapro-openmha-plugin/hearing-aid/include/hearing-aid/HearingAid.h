@@ -25,6 +25,7 @@ public:
     virtual ~FilterbankCompressor() = default;
     using real_type = float;
     using complex_type = float;
+    using complex_signal_type = gsl::span<complex_type>;
     virtual void compressInput(
         real_type *input,
         real_type *output,
@@ -33,14 +34,18 @@ public:
     virtual void analyzeFilterbank(
         real_type *input,
         complex_type *output,
+        complex_signal_type,
         int chunkSize
     ) = 0;
     virtual void compressChannels(
         complex_type *input,
         complex_type *output,
+        complex_signal_type,
+        complex_signal_type,
         int chunkSize
     ) = 0;
     virtual void synthesizeFilterbank(
+        complex_signal_type,
         complex_type *input,
         real_type *output,
         int chunkSize

@@ -16,9 +16,9 @@ void HearingAid::process(signal_type signal) {
     const auto buffer_ = &buffer.front();
     auto signal_ = signal.data();
     compressor->compressInput(signal_, signal_, chunkSize);
-    compressor->analyzeFilterbank(signal_, buffer_, chunkSize);
-    compressor->compressChannels(buffer_, buffer_, chunkSize);
-    compressor->synthesizeFilterbank(buffer_, signal_, chunkSize);
+    compressor->analyzeFilterbank(signal_, buffer_, buffer, chunkSize);
+    compressor->compressChannels(buffer_, buffer_, buffer, buffer, chunkSize);
+    compressor->synthesizeFilterbank(buffer, buffer_, signal_, chunkSize);
     compressor->compressOutput(signal_, signal_, chunkSize);
 }
 }

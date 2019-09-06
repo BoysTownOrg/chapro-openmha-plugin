@@ -6,13 +6,34 @@
 namespace hearing_aid::tests { namespace {
 class FilterbankCompressorSpy : public FilterbankCompressor {
     LogString log_{};
+    complex_signal_type filterbankAnalyzeOutput_;
+    complex_signal_type compressChannelInput_;
+    complex_signal_type compressChannelOutput_;
+    complex_signal_type filterbankSynthesizeInput_;
     int chunkSize_ = 1;
+    int channels_ = 1;
     int compressInputChunkSize_{};
     int filterbankAnalyzeChunkSize_{};
     int compressChannelsChunkSize_{};
     int filterbankSynthesizeChunkSize_{};
     int compressOutputChunkSize_{};
 public:
+    auto filterbankSynthesizeInput() const {
+        return filterbankSynthesizeInput_;
+    }
+
+    auto compressChannelOutput() const {
+        return compressChannelOutput_;
+    }
+
+    auto compressChannelInput() const {
+        return compressChannelInput_;
+    }
+
+    auto filterbankAnalyzeOutput() const {
+        return filterbankAnalyzeOutput_;
+    }
+
     auto &log() const noexcept {
         return log_;
     }
@@ -29,8 +50,10 @@ public:
     void analyzeFilterbank(
         real_type *,
         complex_type *,
+        complex_signal_type s,
         int chunkSize
     ) override {
+        filterbankAnalyzeOutput_ = s;
         filterbankAnalyzeChunkSize_ = chunkSize;
         log_.insert("analyzeFilterbank");
     }
@@ -38,17 +61,23 @@ public:
     void compressChannels(
         complex_type *,
         complex_type *,
+        complex_signal_type a,
+        complex_signal_type b,
         int chunkSize
     ) override {
+        compressChannelInput_ = a;
+        compressChannelOutput_ = b;
         compressChannelsChunkSize_ = chunkSize;
         log_.insert("compressChannels");
     }
 
     void synthesizeFilterbank(
+        complex_signal_type s,
         complex_type *,
         real_type *,
         int chunkSize
     ) override {
+        filterbankSynthesizeInput_ = s;
         filterbankSynthesizeChunkSize_ = chunkSize;
         log_.insert("synthesizeFilterbank");
     }
@@ -90,8 +119,12 @@ public:
         return chunkSize_;
     }
 
+    void setChannels(int c) {
+        channels_ = c;
+    }
+
     int channels() override {
-        return 1;
+        return channels_;
     }
 };
 
@@ -114,7 +147,8 @@ protected:
     }
 
     void process(signal_type x) {
-        process(hearingAid, x);
+        HearingAid hearingAid_{ compressor };
+        process(hearingAid_, x);
     }
 
     void process(HearingAid &hearingAid, signal_type x) {
@@ -123,6 +157,23 @@ protected:
 
     auto &compressorLog() {
         return compressor->log();
+    }
+
+    void setChannels(int c) {
+        compressor->setChannels(c);
+    }
+
+    void setChunkSize(int c) {
+        compressor->setChunkSize(c);
+    }
+
+    void assertEachComplexSize(
+        FilterbankCompressor::complex_signal_type::size_type c
+    ) {
+        assertEqual(c, compressor->filterbankAnalyzeOutput().size());
+        assertEqual(c, compressor->compressChannelInput().size());
+        assertEqual(c, compressor->compressChannelOutput().size());
+        assertEqual(c, compressor->filterbankSynthesizeInput().size());
     }
 };
 
@@ -173,12 +224,14 @@ public:
     void analyzeFilterbank(
         real_type *input,
         complex_type *,
+        complex_signal_type,
         int
     ) override {
         *input *= 5;
     }
 
     void synthesizeFilterbank(
+        complex_signal_type,
         complex_type *,
         real_type *output,
         int
@@ -197,7 +250,7 @@ public:
 
     int chunkSize() override { return 1; }
     int channels() override { return 1; }
-    void compressChannels(complex_type *, complex_type *, int) override {}
+    void compressChannels(complex_type *, complex_type *, complex_signal_type, complex_signal_type, int) override {}
 };
 
 TEST_F(
@@ -221,6 +274,7 @@ public:
     void analyzeFilterbank(
         real_type *,
         complex_type *output,
+        complex_signal_type,
         int
     ) override {
         *(output + pointerOffset_) += 7;
@@ -230,6 +284,8 @@ public:
     void compressChannels(
         complex_type *input,
         complex_type *output,
+        complex_signal_type,
+        complex_signal_type,
         int
     ) override {
         *(input + pointerOffset_) *= 13;
@@ -237,6 +293,7 @@ public:
     }
 
     void synthesizeFilterbank(
+        complex_signal_type,
         complex_type *input,
         real_type *,
         int
@@ -302,5 +359,15 @@ TEST_F(
         (0 + 7) * 11 * 13 * 17 * 19.0f,
         compressor->postSynthesizeFilterbankComplexResult()
     );
+}
+
+TEST_F(
+    HearingAidTests,
+    intermediateBufferSizeIsTwiceProductOfChannelsAndChunkSize
+) {
+    setChunkSize(3);
+    setChannels(5);
+    process();
+    assertEachComplexSize(2 * 3 * 5);
 }
 }}
