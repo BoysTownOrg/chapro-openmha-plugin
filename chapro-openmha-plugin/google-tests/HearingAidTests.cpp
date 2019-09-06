@@ -175,6 +175,21 @@ protected:
         assertEqual(c, compressor->compressChannelOutput().size());
         assertEqual(c, compressor->filterbankSynthesizeInput().size());
     }
+
+    void assertEachComplexBufferEqual() {
+        assertEqual(
+            compressor->compressChannelInput(),
+            compressor->filterbankAnalyzeOutput()
+        );
+        assertEqual(
+            compressor->compressChannelOutput(),
+            compressor->compressChannelInput()
+        );
+        assertEqual(
+            compressor->filterbankSynthesizeInput(),
+            compressor->compressChannelOutput()
+        );
+    }
 };
 
 TEST_F(
@@ -369,5 +384,15 @@ TEST_F(
     setChannels(5);
     process();
     assertEachComplexSize(2 * 3 * 5);
+}
+
+TEST_F(
+    HearingAidTests,
+    eachComplexBufferIsEqual
+) {
+    setChunkSize(3);
+    setChannels(5);
+    process();
+    assertEachComplexBufferEqual();
 }
 }}
