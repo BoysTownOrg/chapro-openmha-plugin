@@ -11,13 +11,12 @@ void AfcHearingAid::process(signal_type signal)  {
     const auto chunkSize = processor->chunkSize();
     if (signal.size() != chunkSize)
         return;
-    auto signal_ = signal.data();
-    processor->feedbackCancelInput(signal_, signal_, signal, signal, chunkSize);
-    processor->compressInput(signal_, signal_, signal, signal, chunkSize);
-    processor->filterbankAnalyze(signal, signal_, buffer, chunkSize);
+    processor->feedbackCancelInput(signal, signal, chunkSize);
+    processor->compressInput(signal, signal, chunkSize);
+    processor->filterbankAnalyze(signal, buffer, chunkSize);
     processor->compressChannel(buffer, buffer, chunkSize);
-    processor->filterbankSynthesize(buffer, signal_, signal, chunkSize);
-    processor->compressOutput(signal_, signal_, signal, signal, chunkSize);
-    processor->feedbackCancelOutput(signal_, signal, chunkSize);
+    processor->filterbankSynthesize(buffer, signal, chunkSize);
+    processor->compressOutput(signal, signal, chunkSize);
+    processor->feedbackCancelOutput(signal, chunkSize);
 }
 }

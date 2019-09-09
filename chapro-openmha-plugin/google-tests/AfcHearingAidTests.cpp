@@ -111,21 +111,21 @@ public:
         return feedbackCancelOutputChunkSize_;
     }
 
-    void feedbackCancelInput(real_type *, real_type *, real_signal_type a, real_signal_type b, int c) override {
+    void feedbackCancelInput(real_signal_type a, real_signal_type b, int c) override {
         feedbackCancelInputInput_ = a;
         feedbackCancelInputOutput_ = b;
         feedbackCancelInputChunkSize_ = c;
         log_.insert("feedbackCancelInput");
     }
 
-    void compressInput(real_type *, real_type *, real_signal_type a, real_signal_type b, int c) override {
+    void compressInput(real_signal_type a, real_signal_type b, int c) override {
         compressInputInput_ = a;
         compressInputOutput_ = b;
         compressInputChunkSize_ = c;
         log_.insert("compressInput");
     }
 
-    void filterbankAnalyze(real_signal_type a, real_type *, complex_signal_type out, int c) override {
+    void filterbankAnalyze(real_signal_type a, complex_signal_type out, int c) override {
         filterbankAnalyzeInput_ = a;
         filterbankAnalyzeOutput_ = out;
         filterbankAnalyzeChunkSize_ = c;
@@ -139,21 +139,21 @@ public:
         log_.insert("compressChannel");
     }
 
-    void filterbankSynthesize(complex_signal_type in, real_type *, real_signal_type b, int c) override {
+    void filterbankSynthesize(complex_signal_type in, real_signal_type b, int c) override {
         filterbankSynthesizeInput_ = in;
         filterbankSynthesizeOutput_ = b;
         filterbankSynthesizeChunkSize_ = c;
         log_.insert("filterbankSynthesize");
     }
 
-    void compressOutput(real_type *, real_type *, real_signal_type a, real_signal_type b, int c) override {
+    void compressOutput(real_signal_type a, real_signal_type b, int c) override {
         compressOutputInput_ = a;
         compressOutputOutput_ = b;
         compressOutputChunkSize_ = c;
         log_.insert("compressOutput");
     }
 
-    void feedbackCancelOutput(real_type *, real_signal_type a, int c) override {
+    void feedbackCancelOutput(real_signal_type a, int c) override {
         feedbackCancelOutputInput_ = a;
         feedbackCancelOutputChunkSize_ = c;
         log_.insert("feedbackCancelOutput");
@@ -295,88 +295,6 @@ TEST_F(AfcHearingAidTests, processPassesChunkSize) {
     setChunkSize(1);
     process();
     assertEachChunkSizeEquals(1);
-}
-
-class MultipliesRealSignalsByPrimes : public SettableChunkSizeSuperSignalProcessor {
-    int chunkSize_;
-public:
-    void compressInput(
-        real_type *input,
-        real_type *output,
-        real_signal_type, 
-        real_signal_type,
-        int
-    ) override {
-        *input *= 2;
-        *output *= 3;
-    }
-
-    void filterbankAnalyze(
-        real_signal_type,
-        real_type *input,
-        complex_signal_type,
-        int
-    ) override {
-        *input *= 5;
-    }
-
-    void filterbankSynthesize(
-        complex_signal_type,
-        real_type *output,
-        real_signal_type,
-        int
-    ) override {
-        *output *= 7;
-    }
-
-    void compressOutput(
-        real_type *input,
-        real_type *output,
-        real_signal_type,
-        real_signal_type,
-        int
-    ) override {
-        *input *= 11;
-        *output *= 13;
-    }
-
-    void feedbackCancelInput(
-        real_type *input,
-        real_type *output,
-        real_signal_type,
-        real_signal_type,
-        int
-    ) override {
-        *input *= 17;
-        *output *= 19;
-    }
-
-    void feedbackCancelOutput(
-        real_type *input,
-        real_signal_type,
-        int
-    ) override {
-        *input *= 23;
-    }
-
-    void setChunkSize(int c) override {
-        chunkSize_ = c;
-    }
-
-    int chunkSize() override { return chunkSize_; }
-    int channels() override { return {}; }
-    void compressChannel(complex_signal_type, complex_signal_type, int) override {}
-};
-
-TEST_F(
-    AfcHearingAidTests,
-    processPassesRealInputsAppropriately
-) {
-    assertTransformation(
-        std::make_shared<MultipliesRealSignalsByPrimes>(),
-        { 0.5 },
-        { 0.5 * 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23 }
-    );
 }
 
 TEST_F(
