@@ -102,11 +102,11 @@ public:
     }
 
     void synthesizeFilterbank(
-        complex_signal_type s,
+        complex_signal_type a,
         real_signal_type b,
         int chunkSize
     ) override {
-        filterbankSynthesizeInput_ = s;
+        filterbankSynthesizeInput_ = a;
         filterbankSynthesizeOutput_ = b;
         filterbankSynthesizeChunkSize_ = chunkSize;
         log_.insert("synthesizeFilterbank");
@@ -166,7 +166,6 @@ protected:
     using buffer_type = std::vector<signal_type::element_type>;
     std::shared_ptr<FilterbankCompressorSpy> compressor =
         std::make_shared<FilterbankCompressorSpy>();
-    HearingAid hearingAid{ compressor };
 
     void processUnequalChunk() {
         buffer_type x(compressor->chunkSize() + 1);
