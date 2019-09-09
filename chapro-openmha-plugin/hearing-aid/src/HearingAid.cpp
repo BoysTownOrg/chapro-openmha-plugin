@@ -5,9 +5,7 @@ HearingAid::HearingAid(
     std::shared_ptr<FilterbankCompressor> compressor
 ) :
     buffer(compressor->channels() * compressor->chunkSize() * 2),
-    compressor{ std::move(compressor) }
-{
-}
+    compressor{ std::move(compressor) } {}
 
 void HearingAid::process(signal_type signal) {
     const auto chunkSize = compressor->chunkSize();

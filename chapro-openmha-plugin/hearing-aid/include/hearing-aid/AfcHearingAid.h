@@ -1,5 +1,5 @@
-#ifndef AFC_HEARING_AID_H_
-#define AFC_HEARING_AID_H_
+#ifndef CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_AFCHEARINGAID_H_
+#define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_AFCHEARINGAID_H_
 
 #include <gsl/gsl>
 #include <memory>
@@ -35,11 +35,27 @@ public:
     using complex_signal_type = gsl::span<complex_type>;
     using real_signal_type = gsl::span<real_type>;
     virtual ~SuperSignalProcessor() = default;
-    virtual void feedbackCancelInput(real_signal_type, real_signal_type, int) = 0;
+    virtual void feedbackCancelInput(
+        real_signal_type,
+        real_signal_type,
+        int
+    ) = 0;
     virtual void compressInput(real_signal_type, real_signal_type, int) = 0;
-    virtual void filterbankAnalyze(real_signal_type, complex_signal_type, int) = 0;
-    virtual void compressChannel(complex_signal_type, complex_signal_type, int) = 0;
-    virtual void filterbankSynthesize(complex_signal_type, real_signal_type, int) = 0;
+    virtual void filterbankAnalyze(
+        real_signal_type,
+        complex_signal_type,
+        int
+    ) = 0;
+    virtual void compressChannel(
+        complex_signal_type,
+        complex_signal_type,
+        int
+    ) = 0;
+    virtual void filterbankSynthesize(
+        complex_signal_type,
+        real_signal_type,
+        int
+    ) = 0;
     virtual void compressOutput(real_signal_type, real_signal_type, int) = 0;
     virtual void feedbackCancelOutput(real_signal_type, int) = 0;
     virtual int chunkSize() = 0;

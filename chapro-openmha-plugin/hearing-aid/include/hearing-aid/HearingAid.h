@@ -1,5 +1,5 @@
-#ifndef hearing_aid_HearingAid_h
-#define hearing_aid_HearingAid_h
+#ifndef CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAID_H_
+#define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAID_H_
 
 #include <gsl/gsl>
 #include <vector>
@@ -62,9 +62,7 @@ class HearingAid {
     std::shared_ptr<FilterbankCompressor> compressor;
 public:
     using signal_type = gsl::span<FilterbankCompressor::real_type>;
-    explicit HearingAid(
-        std::shared_ptr<FilterbankCompressor>
-    );
+    explicit HearingAid(std::shared_ptr<FilterbankCompressor>);
     void process(signal_type);
 };
 }
