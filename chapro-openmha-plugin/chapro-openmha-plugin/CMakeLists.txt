@@ -44,6 +44,7 @@ function(add_openmha)
     set_target_properties(openMHA PROPERTIES 
         IMPORTED_LOCATION ${EXTERNAL_PROJECT_LIBRARY_DIR}/${OPENMHA_LIBRARY_NAME}
         INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
+        IMPORTED_NO_SONAME TRUE
     )
 endfunction()
 
