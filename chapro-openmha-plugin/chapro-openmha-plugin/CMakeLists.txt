@@ -21,7 +21,7 @@ function(add_openmha)
     set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
     set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
     set(OPENMHA_RELATIVE_BUILD_DIR build)
-    set(OPENMHA_LIBRARY_NAME libopenmha.a)
+    set(OPENMHA_LIBRARY_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(OPENMHA_BUILD_DIR ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR})
     set(OPENMHA_LIBRARY ${OPENMHA_BUILD_DIR}/${OPENMHA_LIBRARY_NAME})
     ExternalProject_Add(
@@ -34,14 +34,16 @@ function(add_openmha)
         BUILD_COMMAND
             make -C ${OPENMHA_LIBMHA_DIR}
             -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
+            DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
             COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
         INSTALL_COMMAND
             cp -f ${OPENMHA_LIBRARY} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
-    add_external_static_target(openMHA
-        ${OPENMHA_LIBRARY_NAME}
-        ${OPENMHA_LIBMHA_DIR}/src
+    add_library(openMHA SHARED IMPORTED)
+    set_target_properties(openMHA PROPERTIES 
+        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
+        INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
     )
 endfunction()
 
