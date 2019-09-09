@@ -29,11 +29,11 @@ public:
     Chapro &operator=(Chapro &&) = delete;
     Chapro(const Chapro &) = delete;
     Chapro &operator=(const Chapro &) = delete;
-    void compressInput(real_type * input, real_type * output, int chunkSize) override;
-    void analyzeFilterbank(real_type * input, complex_type * output, int chunkSize) override;
-    void compressChannels(complex_type * input, complex_type * output, int chunkSize) override;
-    void synthesizeFilterbank(complex_type * input, real_type * output, int chunkSize) override;
-    void compressOutput(real_type * input, real_type * output, int chunkSize) override;
+    void compressInput(real_type * input, real_type * output, real_signal_type, real_signal_type, int chunkSize) override;
+    void analyzeFilterbank(real_signal_type, real_type * input, complex_signal_type output, int chunkSize) override;
+    void compressChannels(complex_signal_type input, complex_signal_type output, int chunkSize) override;
+    void synthesizeFilterbank(complex_signal_type input, real_type * output, real_signal_type, int chunkSize) override;
+    void compressOutput(real_type * input, real_type * output, real_signal_type, real_signal_type, int chunkSize) override;
     int chunkSize() override;
     int channels() override;
 };
@@ -88,23 +88,23 @@ Chapro::~Chapro() noexcept {
     cha_cleanup(cha_pointer);
 }
 
-void Chapro::compressInput(float *input, float *output, int chunkSize) {
+void Chapro::compressInput(float *input, float *output, real_signal_type, real_signal_type, int chunkSize) {
     cha_agc_input(cha_pointer, input, output, chunkSize);
 }
 
-void Chapro::analyzeFilterbank(float *input, float *output, int chunkSize) {
-    cha_firfb_analyze(cha_pointer, input, output, chunkSize);
+void Chapro::analyzeFilterbank(real_signal_type, float *input, complex_signal_type output, int chunkSize) {
+    cha_firfb_analyze(cha_pointer, input, output.data(), chunkSize);
 }
 
-void Chapro::compressChannels(float *input, float *output, int chunkSize) {
-    cha_agc_channel(cha_pointer, input, output, chunkSize);
+void Chapro::compressChannels(complex_signal_type input, complex_signal_type output, int chunkSize) {
+    cha_agc_channel(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
-void Chapro::synthesizeFilterbank(float *input, float *output, int chunkSize) {
-    cha_firfb_synthesize(cha_pointer, input, output, chunkSize);
+void Chapro::synthesizeFilterbank(complex_signal_type input, float *output, real_signal_type, int chunkSize) {
+    cha_firfb_synthesize(cha_pointer, input.data(), output, chunkSize);
 }
 
-void Chapro::compressOutput(float *input, float *output, int chunkSize) {
+void Chapro::compressOutput(float *input, float *output, real_signal_type, real_signal_type, int chunkSize) {
     cha_agc_output(cha_pointer, input, output, chunkSize);
 }
 
