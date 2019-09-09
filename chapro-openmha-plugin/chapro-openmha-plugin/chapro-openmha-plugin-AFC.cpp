@@ -27,13 +27,13 @@ public:
     Chapro &operator=(Chapro &&) = delete;
     Chapro(const Chapro &) = delete;
     Chapro &operator=(const Chapro &) = delete;
-    void feedbackCancelInput(real_type *, real_type *, int) override;
-    void compressInput(real_type *, real_type *, int) override;
-    void filterbankAnalyze(real_type *, complex_signal_type, int) override;
+    void feedbackCancelInput(real_signal_type, real_signal_type, int) override;
+    void compressInput(real_signal_type, real_signal_type, int) override;
+    void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
     void compressChannel(complex_signal_type, complex_signal_type, int) override;
-    void filterbankSynthesize(complex_signal_type, real_type *, int) override;
-    void compressOutput(real_type *, real_type *, int) override;
-    void feedbackCancelOutput(real_type *, int) override;
+    void filterbankSynthesize(complex_signal_type, real_signal_type, int) override;
+    void compressOutput(real_signal_type, real_signal_type, int) override;
+    void feedbackCancelOutput(real_signal_type, int) override;
     int chunkSize() override;
     int channels() override;
 };
@@ -115,27 +115,27 @@ Chapro::~Chapro() noexcept {
 }
 
 void Chapro::feedbackCancelInput(
-    real_type *input,
-    real_type *output,
+    real_signal_type input,
+    real_signal_type output,
     int chunkSize
 ) {
-    cha_afc_input(cha_pointer, input, output, chunkSize);
+    cha_afc_input(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
 void Chapro::compressInput(
-    real_type *input,
-    real_type *output,
+    real_signal_type input,
+    real_signal_type output,
     int chunkSize
 ) {
-    cha_agc_input(cha_pointer, input, output, chunkSize);
+    cha_agc_input(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
 void Chapro::filterbankAnalyze(
-    real_type *input,
+    real_signal_type input,
     complex_signal_type output,
     int chunkSize
 ) {
-    cha_iirfb_analyze(cha_pointer, input, output.data(), chunkSize);
+    cha_iirfb_analyze(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
 void Chapro::compressChannel(
@@ -148,22 +148,22 @@ void Chapro::compressChannel(
 
 void Chapro::filterbankSynthesize(
     complex_signal_type input,
-    real_type *output,
+    real_signal_type output,
     int chunkSize
 ) {
-    cha_iirfb_synthesize(cha_pointer, input.data(), output, chunkSize);
+    cha_iirfb_synthesize(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
 void Chapro::compressOutput(
-    real_type *input,
-    real_type *output,
+    real_signal_type input,
+    real_signal_type output,
     int chunkSize
 ) {
-    cha_agc_output(cha_pointer, input, output, chunkSize);
+    cha_agc_output(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
-void Chapro::feedbackCancelOutput(real_type *input, int chunkSize) {
-    cha_afc_output(cha_pointer, input, chunkSize);
+void Chapro::feedbackCancelOutput(real_signal_type input, int chunkSize) {
+    cha_afc_output(cha_pointer, input.data(), chunkSize);
 }
 
 int Chapro::chunkSize() {
