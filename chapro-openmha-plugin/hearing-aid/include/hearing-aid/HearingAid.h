@@ -28,15 +28,12 @@ public:
     using complex_signal_type = gsl::span<complex_type>;
     using real_signal_type = gsl::span<real_type>;
     virtual void compressInput(
-        real_type *input,
-        real_type *output,
         real_signal_type,
         real_signal_type,
         int chunkSize
     ) = 0;
     virtual void analyzeFilterbank(
         real_signal_type,
-        real_type *input,
         complex_signal_type,
         int chunkSize
     ) = 0;
@@ -47,13 +44,10 @@ public:
     ) = 0;
     virtual void synthesizeFilterbank(
         complex_signal_type,
-        real_type *output,
         real_signal_type,
         int chunkSize
     ) = 0;
     virtual void compressOutput(
-        real_type *input,
-        real_type *output,
         real_signal_type,
         real_signal_type,
         int chunkSize

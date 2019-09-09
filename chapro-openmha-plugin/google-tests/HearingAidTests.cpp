@@ -69,8 +69,6 @@ public:
     }
 
     void compressInput(
-        real_type *,
-        real_type *,
         real_signal_type a,
         real_signal_type b,
         int chunkSize
@@ -83,7 +81,6 @@ public:
 
     void analyzeFilterbank(
         real_signal_type a,
-        real_type *,
         complex_signal_type s,
         int chunkSize
     ) override {
@@ -106,7 +103,6 @@ public:
 
     void synthesizeFilterbank(
         complex_signal_type s,
-        real_type *,
         real_signal_type b,
         int chunkSize
     ) override {
@@ -117,8 +113,6 @@ public:
     }
 
     void compressOutput(
-        real_type *,
-        real_type *,
         real_signal_type a,
         real_signal_type b,
         int chunkSize
@@ -288,65 +282,6 @@ TEST_F(HearingAidTests, processPassesChunkSize) {
     assertEqual(1, compressor->compressChannelsChunkSize());
     assertEqual(1, compressor->filterbankSynthesizeChunkSize());
     assertEqual(1, compressor->compressOutputChunkSize());
-}
-
-class MultipliesRealSignalsByPrimes : public FilterbankCompressor {
-public:
-    void compressInput(
-        real_type *input,
-        real_type *output,
-        real_signal_type,
-        real_signal_type,
-        int
-    ) override {
-        *input *= 2;
-        *output *= 3;
-    }
-
-    void analyzeFilterbank(
-        real_signal_type,
-        real_type *input,
-        complex_signal_type,
-        int
-    ) override {
-        *input *= 5;
-    }
-
-    void synthesizeFilterbank(
-        complex_signal_type,
-        real_type *output,
-        real_signal_type,
-        int
-    ) override {
-        *output *= 7;
-    }
-
-    void compressOutput(
-        real_type *input,
-        real_type *output,
-        real_signal_type,
-        real_signal_type,
-        int
-    ) override {
-        *input *= 11;
-        *output *= 13;
-    }
-
-    int chunkSize() override { return 1; }
-    int channels() override { return 1; }
-    void compressChannels(complex_signal_type, complex_signal_type, int) override {}
-};
-
-TEST_F(
-    HearingAidTests,
-    processPassesRealInputsAppropriately
-) {
-    HearingAid hearingAid{
-        std::make_shared<MultipliesRealSignalsByPrimes>()
-    };
-    buffer_type x = { 4 };
-    process(hearingAid, x);
-    assertEqual({ 4 * 2 * 3 * 5 * 7 * 11 * 13 }, x);
 }
 
 TEST_F(
