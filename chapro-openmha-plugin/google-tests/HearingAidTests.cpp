@@ -223,30 +223,12 @@ protected:
     }
 
     void assertEachRealBufferEquals(signal_type x) {
-        assertEqual(
-            x,
-            compressor->filterbankAnalyzeInput()
-        );
-        assertEqual(
-            x,
-            compressor->filterbankSynthesizeOutput()
-        );
-        assertEqual(
-            x,
-            compressor->compressInputInput()
-        );
-        assertEqual(
-            x,
-            compressor->compressInputOutput()
-        );
-        assertEqual(
-            x,
-            compressor->compressOutputInput()
-        );
-        assertEqual(
-            x,
-            compressor->compressOutputOutput()
-        );
+        assertEqual(x, compressor->filterbankAnalyzeInput());
+        assertEqual(x, compressor->filterbankSynthesizeOutput());
+        assertEqual(x, compressor->compressInputInput());
+        assertEqual(x, compressor->compressInputOutput());
+        assertEqual(x, compressor->compressOutputInput());
+        assertEqual(x, compressor->compressOutputOutput());
     }
 };
 
