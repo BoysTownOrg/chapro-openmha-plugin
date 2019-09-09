@@ -42,7 +42,7 @@ function(add_openmha)
     )
     add_library(openMHA SHARED IMPORTED)
     set_target_properties(openMHA PROPERTIES 
-        IMPORTED_LOCATION ${PRIVATE_INSTALL_LIB}/${OPENMHA_LIBRARY_NAME}
+        IMPORTED_LOCATION ${EXTERNAL_PROJECT_LIBRARY_DIR}/${OPENMHA_LIBRARY_NAME}
         INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
     )
 endfunction()
