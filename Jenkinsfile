@@ -8,7 +8,13 @@ node('master') {
     run_stage_inside_docker_image_generic_build_directory(
         'arm-linux-gnueabihf build plugins',
         'arm-linux-gnueabihf',
-        { cross_compile_plugins() }
+        { cross_compile_plugins('Toolchain-arm-linux-gnueabihf.cmake') }
+    )
+
+    run_stage_inside_docker_image_generic_build_directory(
+        'x86_64-w64-mingw32 build plugins',
+        'x86_64-w64-mingw32',
+        { cross_compile_plugins('Toolchain-x86_64-w64-mingw32.cmake') }
     )
 
     run_stage(
@@ -27,7 +33,7 @@ node('master') {
 
                     run_inside_directory(
                         'build-arm-linux', 
-                        { cross_compile_plugins() }
+                        { cross_compile_plugins('Toolchain-arm-linux-gnueabihf.cmake') }
                     )
                 }
             )
@@ -104,8 +110,8 @@ def execute_tests() {
     execute_command_line('ctest')
 }
 
-def cross_compile_plugins() {
-    cmake_generate_build_with_toolchain('Toolchain-arm-linux-gnueabihf.cmake')
+def cross_compile_plugins(toolchain) {
+    cmake_generate_build_with_toolchain(toolchain)
     build_plugins()
 }
 

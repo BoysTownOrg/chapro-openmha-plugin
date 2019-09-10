@@ -15,13 +15,19 @@ function(add_openmha)
     set(OPENMHA_COMPILER_PREFIX "")
     set(OPENMHA_ARCH x86_64)
     if(${CMAKE_CROSSCOMPILING})
-        set(OPENMHA_COMPILER_PREFIX arm-linux-gnueabihf-)
-        set(OPENMHA_ARCH armhf)
+        if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm")
+            set(OPENMHA_COMPILER_PREFIX arm-linux-gnueabihf-)
+            set(OPENMHA_ARCH armhf)
+        else()
+            set(OPENMHA_COMPILER_PREFIX x86_64-w64-mingw32-)
+            set(MINGW_ TRUE)
+        endif()
     endif()
     set(OPENMHA_SOURCE_DIR ${CMAKE_SOURCE_DIR}/openMHA)
     set(OPENMHA_LIBMHA_DIR ${OPENMHA_SOURCE_DIR}/mha/libmha)
     set(OPENMHA_RELATIVE_BUILD_DIR build)
-    set(OPENMHA_LIBRARY_NAME libopenmha${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(OPENMHA_LIBRARY_WITHOUT_EXTENSION libopenmha)
+    set(OPENMHA_LIBRARY_NAME ${OPENMHA_LIBRARY_WITHOUT_EXTENSION}${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(OPENMHA_BUILD_DIR ${OPENMHA_LIBMHA_DIR}/${OPENMHA_RELATIVE_BUILD_DIR})
     set(OPENMHA_LIBRARY ${OPENMHA_BUILD_DIR}/${OPENMHA_LIBRARY_NAME})
     ExternalProject_Add(
@@ -38,7 +44,7 @@ function(add_openmha)
             COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
         INSTALL_COMMAND
-            cp -f ${OPENMHA_LIBRARY} ${EXTERNAL_PROJECT_LIBRARY_DIR}
+            cp -f ${OPENMHA_LIBRARY_WITHOUT_EXTENSION}.* ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
     add_library(openMHA SHARED IMPORTED)
     set_target_properties(openMHA PROPERTIES 
@@ -46,12 +52,22 @@ function(add_openmha)
         INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
         IMPORTED_NO_SONAME TRUE
     )
+    if(${MINGW_})
+        set_target_properties(openMHA PROPERTIES 
+            IMPORTED_IMPLIB ${EXTERNAL_PROJECT_LIBRARY_DIR}/${OPENMHA_LIBRARY_WITHOUT_EXTENSION}.a
+    )
+    endif()
 endfunction()
 
 function(add_chapro)
     set(CHAPRO_MAKEFILE Makefile)
     if(${CMAKE_CROSSCOMPILING})
-        set(CHAPRO_MAKEFILE makefile.arm)
+        if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm")
+            set(CHAPRO_MAKEFILE makefile.arm)
+        else()
+            set(COMPILER_PREFIX x86_64-w64-mingw32-)
+            set(CHAPRO_MAKEFILE makefile.mgw)
+        endif()
     endif()
     set(CHAPRO_LIBRARY_NAME libchapro.a)
     ExternalProject_Add(
@@ -62,7 +78,10 @@ function(add_chapro)
             chmod +x configure &&
             ./configure &&
             make -f ${CHAPRO_MAKEFILE} clean
-        BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
+        BUILD_COMMAND make 
+            CC=${COMPILER_PREFIX}gcc 
+            AR=${COMPILER_PREFIX}ar 
+            -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
         INSTALL_COMMAND
             cp -f ${CHAPRO_LIBRARY_NAME} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )
