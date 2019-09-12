@@ -31,7 +31,12 @@ function(add_openmha)
             set(OPENMHA_COMPILER_PREFIX x86_64-w64-mingw32-)
             set(MINGW_ TRUE)
             set(OPENMHA_LIBRARIES ${OPENMHA_BUILD_DIR}/${OPENMHA_IMPLIBRARY_NAME} ${OPENMHA_LIBRARIES})
+            set(OPENMHA_PLATFORM MinGW)
         endif()
+    elseif(MINGW)
+        set(MINGW_ TRUE)
+        set(OPENMHA_LIBRARIES ${OPENMHA_BUILD_DIR}/${OPENMHA_IMPLIBRARY_NAME} ${OPENMHA_LIBRARIES})
+        set(OPENMHA_PLATFORM MinGW)
     endif()
     ExternalProject_Add(
         project_openMHA
@@ -45,6 +50,7 @@ function(add_openmha)
             -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
             DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
             COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
+            PLATFORM=${OPENMHA_PLATFORM}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
         INSTALL_COMMAND
             cp -f "${OPENMHA_LIBRARIES}" ${EXTERNAL_PROJECT_LIBRARY_DIR}
@@ -72,6 +78,8 @@ function(add_chapro)
             set(COMPILER_PREFIX x86_64-w64-mingw32-)
             set(CHAPRO_MAKEFILE makefile.mgw)
         endif()
+    elseif(MINGW)
+        set(CHAPRO_MAKEFILE makefile.mgw)
     endif()
     set(CHAPRO_LIBRARY_NAME libchapro.a)
     ExternalProject_Add(

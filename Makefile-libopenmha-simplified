@@ -11,7 +11,7 @@ OBJECTS = \
 	mha_parser.o mha_error.o mha_errno.o \
 	mha_events.o mha_os.o
 
-ifeq "x86_64-w64-mingw32-" "$(COMPILERPREFIX)"
+ifeq "MinGW" "$(PLATFORM)"
 LDLIBS += -Wl,--out-implib,$(basename $@).a
 endif
 
