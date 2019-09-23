@@ -207,6 +207,10 @@ protected:
         p.feedbackGain = x;
     }
 
+    void setAdaptiveFeedbackFilterLength(int n) {
+        p.adaptiveFeedbackFilterLength = n;
+    }
+
     void assertFeedbackGain(double x) {
         assertEqual(x, initializer_.feedbackGain());
     }
@@ -272,7 +276,9 @@ TEST_F(
 ) {
     setFeedback();
     setFeedbackGain(1);
+    setAdaptiveFeedbackFilterLength(2);
     initialize();
     assertFeedbackGain(1);
+    assertAdaptiveFeedbackFilterLength(2);
 }
 }}

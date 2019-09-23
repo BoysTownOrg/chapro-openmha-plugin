@@ -56,6 +56,7 @@ public:
         std::string feedback;
         double sampleRate;
         double feedbackGain;
+        int adaptiveFeedbackFilterLength;
         int windowSize;
         int chunkSize;
     };
@@ -81,6 +82,7 @@ public:
         HearingAidInitializer::FeedbackManagement feedbackManagement;
         if (p.feedback == "yes") {
             feedbackManagement.gain = p.feedbackGain;
+            feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
         }
         else {
             feedbackManagement.gain = 0;
