@@ -13,6 +13,7 @@ public:
         double sampleRate;
         int channels;
         int windowSize;
+        int chunkSize;
     };
     virtual void initializeFirFilter(const FirParameters &) = 0;
     virtual void initializeIirFilter() = 0;
@@ -43,6 +44,7 @@ public:
         std::string filterType;
         double sampleRate;
         int windowSize;
+        int chunkSize;
     };
 
     void initialize(const Parameters &p) {
@@ -52,6 +54,7 @@ public:
             firParameters.channels = p.crossFrequencies.size() + 1;
             firParameters.sampleRate = p.sampleRate;
             firParameters.windowSize = p.windowSize;
+            firParameters.chunkSize = p.chunkSize;
             initializer->initializeFirFilter(firParameters);
         }
         else
