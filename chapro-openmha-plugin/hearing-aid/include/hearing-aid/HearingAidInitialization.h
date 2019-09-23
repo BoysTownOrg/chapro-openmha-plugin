@@ -11,6 +11,20 @@ public:
     virtual void initializeIirFilter() = 0;
 };
 
+enum class FilterType {
+    fir,
+    iir
+};
+
+constexpr const char *name(FilterType t) {
+    switch (t) {
+        case FilterType::fir:
+            return "FIR";
+        case FilterType::iir:
+            return "IIR";
+    }
+}
+
 class HearingAidInitialization {
     HearingAidInitializer *initializer;
 public:
@@ -22,7 +36,7 @@ public:
     };
 
     void initialize(const Parameters &p) {
-        if (p.filterType == "FIR")
+        if (p.filterType == name(FilterType::fir))
             initializer->initializeFirFilter();
         else
             initializer->initializeIirFilter();

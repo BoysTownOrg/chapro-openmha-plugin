@@ -37,6 +37,10 @@ class HearingAidInitializationTests : public ::testing::Test {
     HearingAidInitialization initializer{&initializer_};
     HearingAidInitialization::Parameters p;
 protected:
+    void setFilterType(FilterType t) {
+        setFilterType(name(t));
+    }
+
     void setFilterType(std::string s) {
         p.filterType = std::move(s);
     }
@@ -71,14 +75,14 @@ protected:
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
-    setFilterType("FIR");
+    setFilterType(FilterType::fir);
     initialize();
     assertFirInitialized();
     assertIirNotInitialized();
 }
 
 TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {
-    setFilterType("IIR");
+    setFilterType(FilterType::iir);
     initialize();
     assertIirInitialized();
     assertFirNotInitialized();
