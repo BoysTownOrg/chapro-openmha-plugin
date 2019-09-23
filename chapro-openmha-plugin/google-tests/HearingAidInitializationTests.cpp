@@ -52,6 +52,10 @@ protected:
     void assertIirNotInitialized() {
         EXPECT_FALSE(initializer_.iirInitialized());
     }
+
+    void assertFirNotInitialized() {
+        EXPECT_FALSE(initializer_.firInitialized());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
@@ -61,9 +65,10 @@ TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
     assertIirNotInitialized();
 }
 
-TEST_F(HearingAidInitializationTests, iirInitializesIir) {
+TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {
     setFilterType("IIR");
     initialize();
     assertIirInitialized();
+    assertFirNotInitialized();
 }
 }}
