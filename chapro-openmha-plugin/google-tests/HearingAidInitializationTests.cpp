@@ -48,12 +48,17 @@ protected:
     void assertIirInitialized() {
         assertTrue(initializer_.iirInitialized());
     }
+
+    void assertIirNotInitialized() {
+        EXPECT_FALSE(initializer_.iirInitialized());
+    }
 };
 
-TEST_F(HearingAidInitializationTests, firInitializesFir) {
+TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
     setFilterType("FIR");
     initialize();
     assertFirInitialized();
+    assertIirNotInitialized();
 }
 
 TEST_F(HearingAidInitializationTests, iirInitializesIir) {

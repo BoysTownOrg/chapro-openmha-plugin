@@ -21,9 +21,11 @@ public:
         std::string filterType;
     };
 
-    void initialize(const Parameters &) {
-        initializer->initializeFirFilter();
-        initializer->initializeIirFilter();
+    void initialize(const Parameters &p) {
+        if (p.filterType == "FIR")
+            initializer->initializeFirFilter();
+        else
+            initializer->initializeIirFilter();
     }
 };
 }
