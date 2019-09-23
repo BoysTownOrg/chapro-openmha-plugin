@@ -17,14 +17,24 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> iirCrossFrequencies_;
     double firSampleRate_{};
     double iirSampleRate_{};
+    double feedbackGain_{};
     int firChannels_{};
     int iirChannels_{};
     int firWindowSize_{};
     int firChunkSize_{};
     int iirChunkSize_{};
+    int adaptiveFeedbackFilterLength_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto adaptiveFeedbackFilterLength() const {
+        return adaptiveFeedbackFilterLength_;
+    }
+
+    auto feedbackGain() const {
+        return feedbackGain_;
+    }
+
     auto iirCrossFrequencies() const {
         return iirCrossFrequencies_;
     }
@@ -90,7 +100,7 @@ public:
 class HearingAidInitializationTests : public ::testing::Test {
     HearingAidInitializerStub initializer_;
     HearingAidInitialization initializer{&initializer_};
-    HearingAidInitialization::Parameters p;
+    HearingAidInitialization::Parameters p{};
 protected:
     void setFilterType(FilterType t) {
         setFilterType(name(t));
@@ -179,6 +189,18 @@ protected:
     void assertIirChunkSize(int n) {
         assertEqual(n, initializer_.iirChunkSize());
     }
+
+    void setNoFeedback() {
+        p.feedback = "no";
+    }
+
+    void assertFeedbackGain(double x) {
+        assertEqual(x, initializer_.feedbackGain());
+    }
+
+    void assertAdaptiveFeedbackFilterLength(int x) {
+        assertEqual(x, initializer_.adaptiveFeedbackFilterLength());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
@@ -219,5 +241,12 @@ TEST_F(HearingAidInitializationTests, iirPassesParameters) {
     assertIirChannels(3+1);
     assertIirSampleRate(5);
     assertIirChunkSize(6);
+}
+
+TEST_F(HearingAidInitializationTests, noFeedbackSetsGainAndAdaptiveFilterLengthToZero) {
+    setNoFeedback();
+    initialize();
+    assertFeedbackGain(0);
+    assertAdaptiveFeedbackFilterLength(0);
 }
 }}

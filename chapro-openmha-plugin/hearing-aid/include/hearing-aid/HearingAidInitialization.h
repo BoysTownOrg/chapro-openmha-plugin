@@ -48,6 +48,7 @@ public:
     struct Parameters {
         std::vector<double> crossFrequencies;
         std::string filterType;
+        std::string feedback;
         double sampleRate;
         int windowSize;
         int chunkSize;
