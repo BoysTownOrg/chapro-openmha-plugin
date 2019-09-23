@@ -3,6 +3,10 @@
 #include <string>
 
 namespace hearing_aid { namespace {
+void assertTrue(bool c) {
+    EXPECT_TRUE(c);
+}
+
 class HearingAidInitializerStub : public HearingAidInitializer {
     bool firInitialized_{};
     bool iirInitialized_{};
@@ -38,11 +42,11 @@ protected:
     }
 
     void assertFirInitialized() {
-        EXPECT_TRUE(initializer_.firInitialized());
+        assertTrue(initializer_.firInitialized());
     }
 
     void assertIirInitialized() {
-        EXPECT_TRUE(initializer_.iirInitialized());
+        assertTrue(initializer_.iirInitialized());
     }
 };
 
