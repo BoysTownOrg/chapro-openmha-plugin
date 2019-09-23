@@ -73,6 +73,17 @@ Chapro::Chapro(const Parameters &parameters) :
     std::vector<float> gain(channels_);
     std::vector<int> delay(channels_);
     double ir_delay_ms = 2.5;
+    CHA_AFC afc;
+    afc.rho = parameters.filterEstimationForgettingFactor;
+    afc.eps = parameters.filterEstimationPowerThreshold;
+    afc.mu = parameters.filterEstimationStepSize;
+    afc.afl = parameters.adaptiveFeedbackFilterLength;
+    afc.wfl = parameters.signalWhiteningFilterLength;
+    afc.pfl = parameters.persistentFeedbackFilterLength;
+    afc.hdel = parameters.hardwareLatency;
+    afc.sqm = parameters.saveQualityMetric;
+    afc.fbg = parameters.feedbackGain;
+    afc.nqm = 0;
     cha_iirfb_design(
         zeros.data(),
         poles.data(),
@@ -97,15 +108,7 @@ Chapro::Chapro(const Parameters &parameters) :
     );
     cha_afc_prepare(
         cha_pointer,
-        parameters.filterEstimationStepSize,
-        parameters.filterEstimationForgettingFactor,
-        parameters.filterEstimationPowerThreshold,
-        parameters.adaptiveFeedbackFilterLength,
-        parameters.signalWhiteningFilterLength,
-        parameters.persistentFeedbackFilterLength,
-        parameters.hardwareLatency,
-        parameters.feedbackGain,
-        parameters.saveQualityMetric
+        &afc
     );
     cha_agc_prepare(cha_pointer, &dsl, &wdrc);
 }
