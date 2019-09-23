@@ -14,9 +14,14 @@ void assertFalse(bool c) {
 
 class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> firCrossFrequencies_;
+    int firChannels_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto firChannels() const {
+        return firChannels_;
+    }
+
     auto firCrossFrequencies() const {
         return firCrossFrequencies_;
     }
@@ -31,6 +36,7 @@ public:
 
     void initializeFirFilter(const FirParameters &p) override {
         firCrossFrequencies_ = p.crossFrequencies;
+        firChannels_ = p.channels;
         firInitialized_ = true;
     }
 
@@ -87,6 +93,10 @@ protected:
     void assertFirCrossFrequencies(const std::vector<double> &x) {
         assertEqual(x, initializer_.firCrossFrequencies());
     }
+
+    void assertFirChannels(int n) {
+        assertEqual(n, initializer_.firChannels());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
@@ -101,6 +111,7 @@ TEST_F(HearingAidInitializationTests, firPassesParameters) {
     setCrossFrequencies({ 1, 2, 3 });
     initialize();
     assertFirCrossFrequencies({ 1, 2, 3 });
+    assertFirChannels(3+1);
 }
 
 TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {
