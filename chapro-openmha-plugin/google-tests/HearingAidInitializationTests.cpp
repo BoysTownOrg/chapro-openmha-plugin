@@ -1,3 +1,4 @@
+#include "assert-utility.h"
 #include <hearing-aid/HearingAidInitialization.h>
 #include <gtest/gtest.h>
 #include <string>
@@ -12,9 +13,14 @@ void assertFalse(bool c) {
 }
 
 class HearingAidInitializerStub : public HearingAidInitializer {
+    std::vector<double> firCrossFrequencies_;
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto firCrossFrequencies() const {
+        return firCrossFrequencies_;
+    }
+
     auto firInitialized() const {
         return firInitialized_;
     }
@@ -23,7 +29,8 @@ public:
         return iirInitialized_;
     }
 
-    void initializeFirFilter() override {
+    void initializeFirFilter(const FirParameters &p) override {
+        firCrossFrequencies_ = p.crossFrequencies;
         firInitialized_ = true;
     }
 
@@ -72,6 +79,14 @@ protected:
     void assertFirNotInitialized() {
         assertFalse(firInitialized());
     }
+
+    void setCrossFrequencies(std::vector<double> x) {
+        p.crossFrequencies = std::move(x);
+    }
+
+    void assertFirCrossFrequencies(const std::vector<double> &x) {
+        assertEqual(x, initializer_.firCrossFrequencies());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
@@ -79,6 +94,13 @@ TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
     initialize();
     assertFirInitialized();
     assertIirNotInitialized();
+}
+
+TEST_F(HearingAidInitializationTests, firPassesParameters) {
+    setFilterType(FilterType::fir);
+    setCrossFrequencies({ 1, 2, 3 });
+    initialize();
+    assertFirCrossFrequencies({ 1, 2, 3 });
 }
 
 TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {

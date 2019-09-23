@@ -2,12 +2,16 @@
 #define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDINITIALIZATION_H_
 
 #include <string>
+#include <vector>
 
 namespace hearing_aid {
 class HearingAidInitializer {
 public:
     virtual ~HearingAidInitializer() = default;
-    virtual void initializeFirFilter() = 0;
+    struct FirParameters {
+        std::vector<double> crossFrequencies;
+    };
+    virtual void initializeFirFilter(const FirParameters &) = 0;
     virtual void initializeIirFilter() = 0;
 };
 
@@ -32,12 +36,16 @@ public:
         initializer{initializer} {}
 
     struct Parameters {
+        std::vector<double> crossFrequencies;
         std::string filterType;
     };
 
     void initialize(const Parameters &p) {
-        if (p.filterType == name(FilterType::fir))
-            initializer->initializeFirFilter();
+        if (p.filterType == name(FilterType::fir)) {
+            HearingAidInitializer::FirParameters firParameters;
+            firParameters.crossFrequencies = p.crossFrequencies;
+            initializer->initializeFirFilter(firParameters);
+        }
         else
             initializer->initializeIirFilter();
     }
