@@ -18,6 +18,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double firSampleRate_{};
     double iirSampleRate_{};
     double feedbackGain_{};
+    double filterEstimationForgettingFactor_{};
     int firChannels_{};
     int iirChannels_{};
     int firWindowSize_{};
@@ -29,6 +30,10 @@ class HearingAidInitializerStub : public HearingAidInitializer {
 public:
     auto adaptiveFeedbackFilterLength() const {
         return adaptiveFeedbackFilterLength_;
+    }
+
+    auto filterEstimationForgettingFactor() const {
+        return filterEstimationForgettingFactor_;
     }
 
     auto feedbackGain() const {
@@ -99,6 +104,7 @@ public:
     void initializeFeedbackManagement(const FeedbackManagement &p) override {
         feedbackGain_ = p.gain;
         adaptiveFeedbackFilterLength_ = p.adaptiveFilterLength;
+        filterEstimationForgettingFactor_ = p.filterEstimationForgettingFactor;
     }
 };
 
@@ -215,6 +221,14 @@ protected:
         p.adaptiveFeedbackFilterLength = n;
     }
 
+    void setFilterEstimationForgettingFactor(double rho) {
+        p.filterEstimationForgettingFactor = rho;
+    }
+
+    void assertFilterEstimationForgettingFactor(double rho) {
+        assertEqual(rho, initializer_.filterEstimationForgettingFactor());
+    }
+
     void assertFeedbackGain(double x) {
         assertEqual(x, initializer_.feedbackGain());
     }
@@ -281,8 +295,10 @@ TEST_F(
     setFeedback();
     setFeedbackGain(1);
     setAdaptiveFeedbackFilterLength(2);
+    setFilterEstimationForgettingFactor(3);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
+    assertFilterEstimationForgettingFactor(3);
 }
 }}

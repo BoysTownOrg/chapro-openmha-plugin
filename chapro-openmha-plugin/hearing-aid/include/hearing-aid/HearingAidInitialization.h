@@ -25,6 +25,7 @@ public:
     virtual void initializeIirFilter(const IirParameters &) = 0;
     struct FeedbackManagement {
         double gain;
+        double filterEstimationForgettingFactor;
         int adaptiveFilterLength;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
@@ -70,6 +71,7 @@ public:
         std::string feedback;
         double sampleRate;
         double feedbackGain;
+        double filterEstimationForgettingFactor;
         int adaptiveFeedbackFilterLength;
         int windowSize;
         int chunkSize;
@@ -94,6 +96,7 @@ public:
             initializer->initializeIirFilter(iirParameters);
         }
         HearingAidInitializer::FeedbackManagement feedbackManagement;
+        feedbackManagement.filterEstimationForgettingFactor = p.filterEstimationForgettingFactor;
         if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
