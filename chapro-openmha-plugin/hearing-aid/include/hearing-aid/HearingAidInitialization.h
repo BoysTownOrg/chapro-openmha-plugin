@@ -8,6 +8,7 @@ class HearingAidInitializer {
 public:
     virtual ~HearingAidInitializer() = default;
     virtual void initializeFirFilter() = 0;
+    virtual void initializeIirFilter() = 0;
 };
 
 class HearingAidInitialization {
@@ -22,6 +23,7 @@ public:
 
     void initialize(const Parameters &) {
         initializer->initializeFirFilter();
+        initializer->initializeIirFilter();
     }
 };
 }

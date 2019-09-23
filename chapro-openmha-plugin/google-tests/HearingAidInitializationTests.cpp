@@ -5,13 +5,22 @@
 namespace hearing_aid { namespace {
 class HearingAidInitializerStub : public HearingAidInitializer {
     bool firInitialized_{};
+    bool iirInitialized_{};
 public:
     auto firInitialized() const {
         return firInitialized_;
     }
 
+    auto iirInitialized() const {
+        return iirInitialized_;
+    }
+
     void initializeFirFilter() override {
         firInitialized_ = true;
+    }
+
+    void initializeIirFilter() override {
+        iirInitialized_ = true;
     }
 };
 
@@ -31,11 +40,21 @@ protected:
     void assertFirInitialized() {
         EXPECT_TRUE(initializer_.firInitialized());
     }
+
+    void assertIirInitialized() {
+        EXPECT_TRUE(initializer_.iirInitialized());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firInitializesFir) {
     setFilterType("FIR");
     initialize();
     assertFirInitialized();
+}
+
+TEST_F(HearingAidInitializationTests, iirInitializesIir) {
+    setFilterType("IIR");
+    initialize();
+    assertIirInitialized();
 }
 }}
