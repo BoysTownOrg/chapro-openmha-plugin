@@ -14,6 +14,7 @@ void assertFalse(bool c) {
 
 class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> firCrossFrequencies_;
+    std::vector<double> iirCrossFrequencies_;
     double firSampleRate_{};
     int firChannels_{};
     int firWindowSize_{};
@@ -21,6 +22,10 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto iirCrossFrequencies() const {
+        return iirCrossFrequencies_;
+    }
+
     auto firChunkSize() const {
         return firChunkSize_;
     }
@@ -58,7 +63,8 @@ public:
         firInitialized_ = true;
     }
 
-    void initializeIirFilter() override {
+    void initializeIirFilter(const IirParameters &p) override {
+        iirCrossFrequencies_ = p.crossFrequencies;
         iirInitialized_ = true;
     }
 };
@@ -110,6 +116,10 @@ protected:
 
     void assertFirCrossFrequencies(const std::vector<double> &x) {
         assertEqual(x, initializer_.firCrossFrequencies());
+    }
+
+    void assertIirCrossFrequencies(const std::vector<double> &x) {
+        assertEqual(x, initializer_.iirCrossFrequencies());
     }
 
     void assertFirChannels(int n) {
@@ -167,5 +177,12 @@ TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {
     initialize();
     assertIirInitialized();
     assertFirNotInitialized();
+}
+
+TEST_F(HearingAidInitializationTests, iirPassesParameters) {
+    setFilterType(FilterType::iir);
+    setCrossFrequencies({ 1, 2, 3 });
+    initialize();
+    assertIirCrossFrequencies({ 1, 2, 3 });
 }
 }}

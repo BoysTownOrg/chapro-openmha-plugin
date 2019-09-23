@@ -16,7 +16,10 @@ public:
         int chunkSize;
     };
     virtual void initializeFirFilter(const FirParameters &) = 0;
-    virtual void initializeIirFilter() = 0;
+    struct IirParameters {
+        std::vector<double> crossFrequencies;
+    };
+    virtual void initializeIirFilter(const IirParameters &) = 0;
 };
 
 enum class FilterType {
@@ -57,8 +60,11 @@ public:
             firParameters.chunkSize = p.chunkSize;
             initializer->initializeFirFilter(firParameters);
         }
-        else
-            initializer->initializeIirFilter();
+        else {
+            HearingAidInitializer::IirParameters iirParameters;
+            iirParameters.crossFrequencies = p.crossFrequencies;
+            initializer->initializeIirFilter(iirParameters);
+        }
     }
 };
 }
