@@ -12,6 +12,7 @@ public:
         std::vector<double> crossFrequencies;
         double sampleRate;
         int channels;
+        int windowSize;
     };
     virtual void initializeFirFilter(const FirParameters &) = 0;
     virtual void initializeIirFilter() = 0;
@@ -41,6 +42,7 @@ public:
         std::vector<double> crossFrequencies;
         std::string filterType;
         double sampleRate;
+        int windowSize;
     };
 
     void initialize(const Parameters &p) {
@@ -49,6 +51,7 @@ public:
             firParameters.crossFrequencies = p.crossFrequencies;
             firParameters.channels = p.crossFrequencies.size() + 1;
             firParameters.sampleRate = p.sampleRate;
+            firParameters.windowSize = p.windowSize;
             initializer->initializeFirFilter(firParameters);
         }
         else
