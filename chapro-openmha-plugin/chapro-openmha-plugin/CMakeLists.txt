@@ -27,6 +27,7 @@ function(add_openmha)
     ExternalProject_Add(
         project_openMHA
         SOURCE_DIR ${OPENMHA_SOURCE_DIR}
+        BUILD_BYPRODUCTS ${EXTERNAL_PROJECT_LIBRARY_DIR}/${OPENMHA_LIBRARY_NAME}
         BUILD_IN_SOURCE TRUE
         CONFIGURE_COMMAND
             ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH} &&
@@ -46,6 +47,7 @@ function(add_openmha)
         INTERFACE_INCLUDE_DIRECTORIES ${OPENMHA_LIBMHA_DIR}/src
         IMPORTED_NO_SONAME TRUE
     )
+    add_dependencies(openMHA project_openMHA)
 endfunction()
 
 function(add_chapro)
@@ -57,6 +59,7 @@ function(add_chapro)
     ExternalProject_Add(
         project_chapro
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/chapro
+        BUILD_BYPRODUCTS ${EXTERNAL_PROJECT_LIBRARY_DIR}/${CHAPRO_LIBRARY_NAME}
         BUILD_IN_SOURCE TRUE
         CONFIGURE_COMMAND
             chmod +x configure &&
@@ -70,11 +73,11 @@ function(add_chapro)
         ${CHAPRO_LIBRARY_NAME}
         ${CMAKE_SOURCE_DIR}/chapro
     )
+    add_dependencies(chapro project_chapro)
 endfunction()
 
 function(add_openmha_plugin target source plugin)
     add_library(${target} SHARED ${source})
-    add_dependencies(${target} project_chapro project_openMHA)
     set_target_properties(${target} PROPERTIES 
         PREFIX ""
         OUTPUT_NAME ${plugin}
