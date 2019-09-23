@@ -196,11 +196,15 @@ protected:
     }
 
     void setNoFeedback() {
-        p.feedback = "no";
+        setFeedback(Feedback::off);
     }
 
     void setFeedback() {
-        p.feedback = "yes";
+        setFeedback(Feedback::on);
+    }
+
+    void setFeedback(Feedback f) {
+        p.feedback = name(f);
     }
 
     void setFeedbackGain(double x) {

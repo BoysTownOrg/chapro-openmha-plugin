@@ -44,10 +44,24 @@ constexpr const char *name(FilterType t) {
     }
 }
 
+enum class Feedback {
+    on,
+    off
+};
+
+constexpr const char *name(Feedback t) {
+    switch (t) {
+        case Feedback::on:
+            return "yes";
+        case Feedback::off:
+            return "off";
+    }
+}
+
 class HearingAidInitialization {
     HearingAidInitializer *initializer;
 public:
-    HearingAidInitialization(HearingAidInitializer *initializer) :
+    explicit HearingAidInitialization(HearingAidInitializer *initializer) :
         initializer{initializer} {}
 
     struct Parameters {
@@ -80,7 +94,7 @@ public:
             initializer->initializeIirFilter(iirParameters);
         }
         HearingAidInitializer::FeedbackManagement feedbackManagement;
-        if (p.feedback == "yes") {
+        if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
         }
