@@ -1,6 +1,7 @@
 add_executable(google-tests 
     HearingAidTests.cpp
     AfcHearingAidTests.cpp
+    HearingAidInitializationTests.cpp
 )
 target_compile_options(google-tests PRIVATE -Wall -Wextra -pedantic -Werror)
 target_compile_features(google-tests PRIVATE cxx_std_17)
