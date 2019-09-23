@@ -20,6 +20,7 @@ public:
         std::vector<double> crossFrequencies;
         double sampleRate;
         int channels;
+        int chunkSize;
     };
     virtual void initializeIirFilter(const IirParameters &) = 0;
 };
@@ -67,6 +68,7 @@ public:
             iirParameters.crossFrequencies = p.crossFrequencies;
             iirParameters.channels = p.crossFrequencies.size() + 1;
             iirParameters.sampleRate = p.sampleRate;
+            iirParameters.chunkSize = p.chunkSize;
             initializer->initializeIirFilter(iirParameters);
         }
     }

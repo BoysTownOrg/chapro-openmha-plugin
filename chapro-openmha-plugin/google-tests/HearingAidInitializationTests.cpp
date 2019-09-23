@@ -21,11 +21,16 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     int iirChannels_{};
     int firWindowSize_{};
     int firChunkSize_{};
+    int iirChunkSize_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
     auto iirCrossFrequencies() const {
         return iirCrossFrequencies_;
+    }
+
+    auto iirChunkSize() const {
+        return iirChunkSize_;
     }
 
     auto firChunkSize() const {
@@ -77,6 +82,7 @@ public:
         iirCrossFrequencies_ = p.crossFrequencies;
         iirChannels_ = p.channels;
         iirSampleRate_ = p.sampleRate;
+        iirChunkSize_ = p.chunkSize;
         iirInitialized_ = true;
     }
 };
@@ -169,6 +175,10 @@ protected:
     void assertFirChunkSize(int n) {
         assertEqual(n, initializer_.firChunkSize());
     }
+
+    void assertIirChunkSize(int n) {
+        assertEqual(n, initializer_.iirChunkSize());
+    }
 };
 
 TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
@@ -203,9 +213,11 @@ TEST_F(HearingAidInitializationTests, iirPassesParameters) {
     setFilterType(FilterType::iir);
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
+    setChunkSize(6);
     initialize();
     assertIirCrossFrequencies({ 1, 2, 3 });
     assertIirChannels(3+1);
     assertIirSampleRate(5);
+    assertIirChunkSize(6);
 }
 }}
