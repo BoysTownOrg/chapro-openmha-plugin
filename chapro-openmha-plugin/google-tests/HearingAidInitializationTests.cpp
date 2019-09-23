@@ -7,6 +7,10 @@ void assertTrue(bool c) {
     EXPECT_TRUE(c);
 }
 
+void assertFalse(bool c) {
+    EXPECT_FALSE(c);
+}
+
 class HearingAidInitializerStub : public HearingAidInitializer {
     bool firInitialized_{};
     bool iirInitialized_{};
@@ -41,20 +45,28 @@ protected:
         initializer.initialize(p);
     }
 
+    bool firInitialized() {
+        return initializer_.firInitialized();
+    }
+
+    bool iirInitialized() {
+        return initializer_.iirInitialized();
+    }
+
     void assertFirInitialized() {
-        assertTrue(initializer_.firInitialized());
+        assertTrue(firInitialized());
     }
 
     void assertIirInitialized() {
-        assertTrue(initializer_.iirInitialized());
+        assertTrue(iirInitialized());
     }
 
     void assertIirNotInitialized() {
-        EXPECT_FALSE(initializer_.iirInitialized());
+        assertFalse(iirInitialized());
     }
 
     void assertFirNotInitialized() {
-        EXPECT_FALSE(initializer_.firInitialized());
+        assertFalse(firInitialized());
     }
 };
 
