@@ -1,5 +1,6 @@
 #include "mha_plugin.hh"
 #include <hearing-aid/HearingAid.h>
+#include <hearing-aid/HearingAidInitialization.h>
 extern "C" {
 #include <chapro.h>
 }
@@ -15,6 +16,28 @@ extern "C" {
 #undef dzero
 #undef round
 #undef log2
+
+class ChaproInitializer : public hearing_aid::HearingAidInitializer {
+    CHA_PTR cha_pointer;
+public:
+    ChaproInitializer(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    
+    void initializeFirFilter(const FirParameters &p) override {
+        const auto hamming = 0;
+        auto mutableCrossFrequencies = p.crossFrequencies;
+        cha_firfb_prepare(
+            cha_pointer,
+            mutableCrossFrequencies.data(),
+            p.channels,
+            p.sampleRate,
+            p.windowSize,
+            hamming,
+            p.chunkSize
+        );
+    }
+
+    void initializeIirFilter(const IirParameters &) override {}
+};
 
 class Chapro : public hearing_aid::FilterbankCompressor {
     void *cha_pointer[NPTR]{};
