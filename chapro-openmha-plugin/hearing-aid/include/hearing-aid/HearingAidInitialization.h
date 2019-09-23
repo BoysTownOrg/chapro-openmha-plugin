@@ -18,6 +18,7 @@ public:
     virtual void initializeFirFilter(const FirParameters &) = 0;
     struct IirParameters {
         std::vector<double> crossFrequencies;
+        double sampleRate;
         int channels;
     };
     virtual void initializeIirFilter(const IirParameters &) = 0;
@@ -65,6 +66,7 @@ public:
             HearingAidInitializer::IirParameters iirParameters;
             iirParameters.crossFrequencies = p.crossFrequencies;
             iirParameters.channels = p.crossFrequencies.size() + 1;
+            iirParameters.sampleRate = p.sampleRate;
             initializer->initializeIirFilter(iirParameters);
         }
     }
