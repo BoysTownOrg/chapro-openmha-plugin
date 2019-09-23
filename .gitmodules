@@ -1,12 +1,15 @@
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest
+	branch = origin/master
 [submodule "GSL"]
 	path = GSL
 	url = https://github.com/microsoft/GSL
+	branch = origin/master
 [submodule "openMHA"]
 	path = openMHA
 	url = https://github.com/HoerTech-gGmbH/openMHA
+	branch = origin/master
 [submodule "chapro"]
 	path = chapro
 	url = https://github.com/boystownorg/chapro
