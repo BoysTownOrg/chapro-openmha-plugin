@@ -95,6 +95,11 @@ public:
         iirChunkSize_ = p.chunkSize;
         iirInitialized_ = true;
     }
+
+    void initializeFeedbackManagement(const FeedbackManagement &p) override {
+        feedbackGain_ = p.gain;
+        adaptiveFeedbackFilterLength_ = p.adaptiveFilterLength;
+    }
 };
 
 class HearingAidInitializationTests : public ::testing::Test {
@@ -194,6 +199,14 @@ protected:
         p.feedback = "no";
     }
 
+    void setFeedback() {
+        p.feedback = "yes";
+    }
+
+    void setFeedbackGain(double x) {
+        p.feedbackGain = x;
+    }
+
     void assertFeedbackGain(double x) {
         assertEqual(x, initializer_.feedbackGain());
     }
@@ -243,10 +256,23 @@ TEST_F(HearingAidInitializationTests, iirPassesParameters) {
     assertIirChunkSize(6);
 }
 
-TEST_F(HearingAidInitializationTests, noFeedbackSetsGainAndAdaptiveFilterLengthToZero) {
+TEST_F(
+    HearingAidInitializationTests,
+    noFeedbackSetsGainAndAdaptiveFilterLengthToZero
+) {
     setNoFeedback();
     initialize();
     assertFeedbackGain(0);
     assertAdaptiveFeedbackFilterLength(0);
+}
+
+TEST_F(
+    HearingAidInitializationTests,
+    feedbackPassesParameters
+) {
+    setFeedback();
+    setFeedbackGain(1);
+    initialize();
+    assertFeedbackGain(1);
 }
 }}

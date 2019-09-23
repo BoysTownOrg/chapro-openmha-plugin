@@ -23,6 +23,11 @@ public:
         int chunkSize;
     };
     virtual void initializeIirFilter(const IirParameters &) = 0;
+    struct FeedbackManagement {
+        double gain;
+        int adaptiveFilterLength;
+    };
+    virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
 };
 
 enum class FilterType {
@@ -50,6 +55,7 @@ public:
         std::string filterType;
         std::string feedback;
         double sampleRate;
+        double feedbackGain;
         int windowSize;
         int chunkSize;
     };
@@ -72,6 +78,16 @@ public:
             iirParameters.chunkSize = p.chunkSize;
             initializer->initializeIirFilter(iirParameters);
         }
+        HearingAidInitializer::FeedbackManagement feedbackManagement;
+        if (p.feedback == "yes") {
+            feedbackManagement.gain = p.feedbackGain;
+        }
+        else {
+            feedbackManagement.gain = 0;
+            feedbackManagement.adaptiveFilterLength = 0;
+        }
+
+        initializer->initializeFeedbackManagement(feedbackManagement);
     }
 };
 }
