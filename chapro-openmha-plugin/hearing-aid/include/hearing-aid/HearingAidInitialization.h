@@ -10,6 +10,7 @@ public:
     virtual ~HearingAidInitializer() = default;
     struct FirParameters {
         std::vector<double> crossFrequencies;
+        double sampleRate;
         int channels;
     };
     virtual void initializeFirFilter(const FirParameters &) = 0;
@@ -39,6 +40,7 @@ public:
     struct Parameters {
         std::vector<double> crossFrequencies;
         std::string filterType;
+        double sampleRate;
     };
 
     void initialize(const Parameters &p) {
@@ -46,6 +48,7 @@ public:
             HearingAidInitializer::FirParameters firParameters;
             firParameters.crossFrequencies = p.crossFrequencies;
             firParameters.channels = p.crossFrequencies.size() + 1;
+            firParameters.sampleRate = p.sampleRate;
             initializer->initializeFirFilter(firParameters);
         }
         else
