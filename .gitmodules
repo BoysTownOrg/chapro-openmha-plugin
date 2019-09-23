@@ -10,3 +10,4 @@
 [submodule "chapro"]
 	path = chapro
 	url = https://github.com/boystownorg/chapro
+	master = origin/master
