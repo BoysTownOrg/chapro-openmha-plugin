@@ -21,7 +21,7 @@ class ChaproInitializer : public hearing_aid::HearingAidInitializer {
     CHA_PTR cha_pointer;
 public:
     ChaproInitializer(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
-    
+
     void initializeFirFilter(const FirParameters &p) override {
         const auto hamming = 0;
         auto mutableCrossFrequencies = p.crossFrequencies;
@@ -36,7 +36,38 @@ public:
         );
     }
 
-    void initializeIirFilter(const IirParameters &) override {}
+    void initializeIirFilter(const IirParameters &p) override {
+        int zerosCount = 4;
+        auto size_ = 2*p.channels*zerosCount;
+        std::vector<float> zeros(size_);
+        std::vector<float> poles(size_);
+        std::vector<float> gain(p.channels);
+        std::vector<int> delay(p.channels);
+        double ir_delay_ms = 2.5;
+        auto mutableCrossFrequencies = p.crossFrequencies;
+        cha_iirfb_design(
+            zeros.data(),
+            poles.data(),
+            gain.data(),
+            delay.data(),
+            mutableCrossFrequencies.data(),
+            p.channels,
+            zerosCount,
+            p.sampleRate,
+            ir_delay_ms
+        );
+        cha_iirfb_prepare(
+            cha_pointer,
+            zeros.data(),
+            poles.data(),
+            gain.data(),
+            delay.data(),
+            p.channels,
+            zerosCount,
+            p.sampleRate,
+            p.chunkSize
+        );
+    }
 };
 
 class Chapro : public hearing_aid::FilterbankCompressor {
