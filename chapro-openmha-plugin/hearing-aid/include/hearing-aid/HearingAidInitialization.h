@@ -35,6 +35,10 @@ public:
         int saveQualityMetric;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
+    struct AutomaticGainControl {
+        std::vector<double> crossFrequencies;
+    };
+    virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
 };
 
 enum class FilterType {

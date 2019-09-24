@@ -41,5 +41,8 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     }
 
     initializer->initializeFeedbackManagement(feedbackManagement);
+    HearingAidInitializer::AutomaticGainControl automaticGainControl;
+    automaticGainControl.crossFrequencies = p.crossFrequencies;
+    initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 }

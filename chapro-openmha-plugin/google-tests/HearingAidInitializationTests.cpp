@@ -15,6 +15,7 @@ void assertFalse(bool c) {
 class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> firCrossFrequencies_;
     std::vector<double> iirCrossFrequencies_;
+    std::vector<double> agcCrossFrequencies_;
     double firSampleRate_{};
     double iirSampleRate_{};
     double feedbackGain_{};
@@ -68,6 +69,10 @@ public:
 
     auto feedbackGain() const {
         return feedbackGain_;
+    }
+
+    auto agcCrossFrequencies() const {
+        return agcCrossFrequencies_;
     }
 
     auto iirCrossFrequencies() const {
@@ -142,6 +147,10 @@ public:
         hardwareLatency_ = p.hardwareLatency;
         saveQualityMetric_ = p.saveQualityMetric;
     }
+
+    void initializeAutomaticGainControl(const AutomaticGainControl &p) override {
+        agcCrossFrequencies_ = p.crossFrequencies;
+    }
 };
 
 class HearingAidInitializationTests : public ::testing::Test {
@@ -195,6 +204,10 @@ protected:
 
     void assertIirCrossFrequencies(const std::vector<double> &x) {
         assertEqual(x, initializer_.iirCrossFrequencies());
+    }
+
+    void assertAgcCrossFrequencies(const std::vector<double> &x) {
+        assertEqual(x, initializer_.agcCrossFrequencies());
     }
 
     void assertFirChannels(int n) {
@@ -396,5 +409,11 @@ TEST_F(
     assertPersistentFeedbackFilterLength(7);
     assertHardwareLatency(8);
     assertSaveQualityMetric(9);
+}
+
+TEST_F(HearingAidInitializationTests, passesAgcParameters) {
+    setCrossFrequencies({ 1, 2, 3 });
+    initialize();
+    assertAgcCrossFrequencies({ 1, 2, 3 });
 }
 }}
