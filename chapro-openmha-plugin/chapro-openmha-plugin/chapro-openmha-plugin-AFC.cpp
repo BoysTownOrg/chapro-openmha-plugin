@@ -86,6 +86,58 @@ public:
     }
 };
 
+class ChaproFirFilter : public hearing_aid::Filter {
+    CHA_PTR cha_pointer;
+public:
+    ChaproFirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    using real_signal_type = hearing_aid::real_signal_type;
+    using complex_signal_type = hearing_aid::complex_signal_type;
+    void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
+    void filterbankSynthesize(complex_signal_type, real_signal_type, int) override;
+};
+
+void ChaproFirFilter::filterbankAnalyze(
+    real_signal_type input,
+    complex_signal_type output,
+    int chunkSize
+) {
+    cha_firfb_analyze(cha_pointer, input.data(), output.data(), chunkSize);
+}
+
+void ChaproFirFilter::filterbankSynthesize(
+    complex_signal_type input,
+    real_signal_type output,
+    int chunkSize
+) {
+    cha_firfb_synthesize(cha_pointer, input.data(), output.data(), chunkSize);
+}
+
+class ChaproIirFilter : public hearing_aid::Filter {
+    CHA_PTR cha_pointer;
+public:
+    ChaproIirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    using real_signal_type = hearing_aid::real_signal_type;
+    using complex_signal_type = hearing_aid::complex_signal_type;
+    void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
+    void filterbankSynthesize(complex_signal_type, real_signal_type, int) override;
+};
+
+void ChaproIirFilter::filterbankAnalyze(
+    real_signal_type input,
+    complex_signal_type output,
+    int chunkSize
+) {
+    cha_iirfb_analyze(cha_pointer, input.data(), output.data(), chunkSize);
+}
+
+void ChaproIirFilter::filterbankSynthesize(
+    complex_signal_type input,
+    real_signal_type output,
+    int chunkSize
+) {
+    cha_iirfb_synthesize(cha_pointer, input.data(), output.data(), chunkSize);
+}
+
 class Chapro : public hearing_aid::SuperSignalProcessor, public hearing_aid::Filter {
     void *cha_pointer[NPTR]{};
     const int channels_;
