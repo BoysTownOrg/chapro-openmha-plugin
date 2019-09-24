@@ -28,9 +28,14 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     int iirChunkSize_{};
     int adaptiveFeedbackFilterLength_{};
     int signalWhiteningFilterLength_{};
+    int persistentFeedbackFilterLength_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto persistentFeedbackFilterLength() const {
+        return persistentFeedbackFilterLength_;
+    }
+
     auto signalWhiteningFilterLength() const {
         return signalWhiteningFilterLength_;
     }
@@ -123,6 +128,7 @@ public:
         filterEstimationPowerThreshold_ = p.filterEstimationPowerThreshold;
         filterEstimationStepSize_ = p.filterEstimationStepSize;
         signalWhiteningFilterLength_ = p.signalWhiteningFilterLength;
+        persistentFeedbackFilterLength_ = p.persistentFeedbackFilterLength;
     }
 };
 
@@ -254,6 +260,10 @@ protected:
     void setSignalWhiteningFilterLength(int wfl) {
         p.signalWhiteningFilterLength = wfl;
     }
+    
+    void setPersistentFeedbackFilterLength(int pfl) {
+        p.persistentFeedbackFilterLength = pfl;
+    }
 
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
@@ -269,6 +279,10 @@ protected:
 
     void assertSignalWhiteningFilterLength(int wfl) {
         assertEqual(wfl, initializer_.signalWhiteningFilterLength());
+    }
+
+    void assertPersistentFeedbackFilterLength(int pfl) {
+        assertEqual(pfl, initializer_.persistentFeedbackFilterLength());
     }
 
     void assertFeedbackGain(double x) {
@@ -341,6 +355,7 @@ TEST_F(
     setFilterEstimationPowerThreshold(4);
     setFilterEstimationStepSize(5);
     setSignalWhiteningFilterLength(6);
+    setPersistentFeedbackFilterLength(7);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
@@ -348,5 +363,6 @@ TEST_F(
     assertFilterEstimationPowerThreshold(4);
     assertFilterEstimationStepSize(5);
     assertSignalWhiteningFilterLength(6);
+    assertPersistentFeedbackFilterLength(7);
 }
 }}
