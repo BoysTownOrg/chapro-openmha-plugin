@@ -110,6 +110,8 @@ public:
     };
 
     void initialize(const Parameters &);
+private:
+    int channels(const Parameters &);
 };
 }
 

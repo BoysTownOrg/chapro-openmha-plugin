@@ -5,7 +5,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     if (p.filterType == name(FilterType::fir)) {
         HearingAidInitializer::FirParameters firParameters;
         firParameters.crossFrequencies = p.crossFrequencies;
-        firParameters.channels = p.crossFrequencies.size() + 1;
+        firParameters.channels = channels(p);
         firParameters.sampleRate = p.sampleRate;
         firParameters.windowSize = p.windowSize;
         firParameters.chunkSize = p.chunkSize;
@@ -13,7 +13,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     } else {
         HearingAidInitializer::IirParameters iirParameters;
         iirParameters.crossFrequencies = p.crossFrequencies;
-        iirParameters.channels = p.crossFrequencies.size() + 1;
+        iirParameters.channels = channels(p);
         iirParameters.sampleRate = p.sampleRate;
         iirParameters.chunkSize = p.chunkSize;
         initializer->initializeIirFilter(iirParameters);
@@ -42,7 +42,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     initializer->initializeFeedbackManagement(feedbackManagement);
     HearingAidInitializer::AutomaticGainControl automaticGainControl;
     automaticGainControl.crossFrequencies = p.crossFrequencies;
-    automaticGainControl.channels = p.crossFrequencies.size()+1;
+    automaticGainControl.channels = channels(p);
     automaticGainControl.attack = p.attack;
     automaticGainControl.release = p.release;
     automaticGainControl.compressionRatios = p.compressionRatios;
@@ -53,5 +53,9 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     automaticGainControl.sampleRate = p.sampleRate;
     automaticGainControl.fullScaleLevel = p.fullScaleLevel;
     initializer->initializeAutomaticGainControl(automaticGainControl);
+}
+
+int HearingAidInitialization::channels(const Parameters &p) {
+    return p.crossFrequencies.size() + 1;
 }
 }
