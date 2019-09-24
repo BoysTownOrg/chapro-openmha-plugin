@@ -20,6 +20,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double feedbackGain_{};
     double filterEstimationForgettingFactor_{};
     double filterEstimationPowerThreshold_{};
+    double filterEstimationStepSize_{};
     int firChannels_{};
     int iirChannels_{};
     int firWindowSize_{};
@@ -29,6 +30,10 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto filterEstimationStepSize() const {
+        return filterEstimationStepSize_;
+    }
+
     auto adaptiveFeedbackFilterLength() const {
         return adaptiveFeedbackFilterLength_;
     }
@@ -111,6 +116,7 @@ public:
         adaptiveFeedbackFilterLength_ = p.adaptiveFilterLength;
         filterEstimationForgettingFactor_ = p.filterEstimationForgettingFactor;
         filterEstimationPowerThreshold_ = p.filterEstimationPowerThreshold;
+        filterEstimationStepSize_ = p.filterEstimationStepSize;
     }
 };
 
@@ -234,6 +240,10 @@ protected:
     void setFilterEstimationPowerThreshold(double eps) {
         p.filterEstimationPowerThreshold = eps;
     }
+    
+    void setFilterEstimationStepSize(double mu) {
+        p.filterEstimationStepSize = mu;
+    }
 
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
@@ -241,6 +251,10 @@ protected:
 
     void assertFilterEstimationPowerThreshold(double eps) {
         assertEqual(eps, initializer_.filterEstimationPowerThreshold());
+    }
+
+    void assertFilterEstimationStepSize(double mu) {
+        assertEqual(mu, initializer_.filterEstimationStepSize());
     }
 
     void assertFeedbackGain(double x) {
@@ -311,10 +325,12 @@ TEST_F(
     setAdaptiveFeedbackFilterLength(2);
     setFilterEstimationForgettingFactor(3);
     setFilterEstimationPowerThreshold(4);
+    setFilterEstimationStepSize(5);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
     assertFilterEstimationForgettingFactor(3);
     assertFilterEstimationPowerThreshold(4);
+    assertFilterEstimationStepSize(5);
 }
 }}

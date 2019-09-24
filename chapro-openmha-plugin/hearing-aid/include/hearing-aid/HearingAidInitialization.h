@@ -27,6 +27,7 @@ public:
         double gain;
         double filterEstimationForgettingFactor;
         double filterEstimationPowerThreshold;
+        double filterEstimationStepSize;
         int adaptiveFilterLength;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
@@ -74,6 +75,7 @@ public:
         double feedbackGain;
         double filterEstimationForgettingFactor;
         double filterEstimationPowerThreshold;
+        double filterEstimationStepSize;
         int adaptiveFeedbackFilterLength;
         int windowSize;
         int chunkSize;
@@ -100,6 +102,7 @@ public:
         HearingAidInitializer::FeedbackManagement feedbackManagement;
         feedbackManagement.filterEstimationForgettingFactor = p.filterEstimationForgettingFactor;
         feedbackManagement.filterEstimationPowerThreshold = p.filterEstimationPowerThreshold;
+        feedbackManagement.filterEstimationStepSize = p.filterEstimationStepSize;
         if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
