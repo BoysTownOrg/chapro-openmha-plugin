@@ -43,6 +43,7 @@ public:
         std::vector<double> broadbandOutputLimitingThresholds;
         double attack;
         double release;
+        double sampleRate;
         int channels;
     };
     virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;

@@ -50,6 +50,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     automaticGainControl.kneepointGains = p.kneepointGains;
     automaticGainControl.broadbandOutputLimitingThresholds =
         p.broadbandOutputLimitingThresholds;
+    automaticGainControl.sampleRate = p.sampleRate;
     initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 }

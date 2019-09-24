@@ -24,6 +24,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double agcRelease_{};
     double firSampleRate_{};
     double iirSampleRate_{};
+    double agcSampleRate_{};
     double feedbackGain_{};
     double filterEstimationForgettingFactor_{};
     double filterEstimationPowerThreshold_{};
@@ -122,6 +123,10 @@ public:
         return iirSampleRate_;
     }
 
+    auto agcSampleRate() const {
+        return agcSampleRate_;
+    }
+
     auto agcRelease() const {
         return agcRelease_;
     }
@@ -192,6 +197,7 @@ public:
         agcKneepoints_ = p.kneepoints;
         agcKneepointGains_ = p.kneepointGains;
         agcBroadbandOutputLimitingThresholds_ = p.broadbandOutputLimitingThresholds;
+        agcSampleRate_ = p.sampleRate;
     }
 };
 
@@ -310,6 +316,10 @@ protected:
 
     void assertAgcRelease(double x) {
         assertEqual(x, initializer_.agcRelease());
+    }
+
+    void assertAgcSampleRate(double x) {
+        assertEqual(x, initializer_.agcSampleRate());
     }
 
     void setSampleRate(double r) {
@@ -513,6 +523,7 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     setKneepoints({10, 11, 12});
     setKneepointGains({13, 14, 15});
     setBroadbandOutputLimitingThresholds({16, 17, 18});
+    setSampleRate(19);
     initialize();
     assertAgcCrossFrequencies({ 1, 2, 3 });
     assertAgcChannels(3+1);
@@ -522,5 +533,6 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     assertAgcKneepoints({10, 11, 12});
     assertAgcKneepointGains({13, 14, 15});
     assertAgcBroadbandOutputLimitingThresholds({16, 17, 18});
+    assertAgcSampleRate(19);
 }
 }}
