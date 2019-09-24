@@ -47,6 +47,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     automaticGainControl.attack = p.attack;
     automaticGainControl.release = p.release;
     automaticGainControl.compressionRatios = p.compressionRatios;
+    automaticGainControl.kneepoints = p.kneepoints;
     initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 }

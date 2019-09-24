@@ -38,6 +38,7 @@ public:
     struct AutomaticGainControl {
         std::vector<double> crossFrequencies;
         std::vector<double> compressionRatios;
+        std::vector<double> kneepoints;
         double attack;
         double release;
         int channels;
@@ -82,6 +83,7 @@ public:
     struct Parameters {
         std::vector<double> crossFrequencies;
         std::vector<double> compressionRatios;
+        std::vector<double> kneepoints;
         std::string filterType;
         std::string feedback;
         double attack;
