@@ -27,9 +27,14 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     int firChunkSize_{};
     int iirChunkSize_{};
     int adaptiveFeedbackFilterLength_{};
+    int signalWhiteningFilterLength_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto signalWhiteningFilterLength() const {
+        return signalWhiteningFilterLength_;
+    }
+
     auto filterEstimationStepSize() const {
         return filterEstimationStepSize_;
     }
@@ -117,6 +122,7 @@ public:
         filterEstimationForgettingFactor_ = p.filterEstimationForgettingFactor;
         filterEstimationPowerThreshold_ = p.filterEstimationPowerThreshold;
         filterEstimationStepSize_ = p.filterEstimationStepSize;
+        signalWhiteningFilterLength_ = p.signalWhiteningFilterLength;
     }
 };
 
@@ -244,6 +250,10 @@ protected:
     void setFilterEstimationStepSize(double mu) {
         p.filterEstimationStepSize = mu;
     }
+    
+    void setSignalWhiteningFilterLength(int wfl) {
+        p.signalWhiteningFilterLength = wfl;
+    }
 
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
@@ -255,6 +265,10 @@ protected:
 
     void assertFilterEstimationStepSize(double mu) {
         assertEqual(mu, initializer_.filterEstimationStepSize());
+    }
+
+    void assertSignalWhiteningFilterLength(int wfl) {
+        assertEqual(wfl, initializer_.signalWhiteningFilterLength());
     }
 
     void assertFeedbackGain(double x) {
@@ -326,11 +340,13 @@ TEST_F(
     setFilterEstimationForgettingFactor(3);
     setFilterEstimationPowerThreshold(4);
     setFilterEstimationStepSize(5);
+    setSignalWhiteningFilterLength(6);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
     assertFilterEstimationForgettingFactor(3);
     assertFilterEstimationPowerThreshold(4);
     assertFilterEstimationStepSize(5);
+    assertSignalWhiteningFilterLength(6);
 }
 }}
