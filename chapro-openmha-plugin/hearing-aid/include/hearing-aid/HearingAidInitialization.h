@@ -40,6 +40,7 @@ public:
         std::vector<double> compressionRatios;
         std::vector<double> kneepoints;
         std::vector<double> kneepointGains;
+        std::vector<double> broadbandOutputLimitingThresholds;
         double attack;
         double release;
         int channels;
@@ -86,6 +87,7 @@ public:
         std::vector<double> compressionRatios;
         std::vector<double> kneepoints;
         std::vector<double> kneepointGains;
+        std::vector<double> broadbandOutputLimitingThresholds;
         std::string filterType;
         std::string feedback;
         double attack;
