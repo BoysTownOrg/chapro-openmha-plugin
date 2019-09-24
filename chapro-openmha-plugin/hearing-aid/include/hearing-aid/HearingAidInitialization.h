@@ -39,6 +39,7 @@ public:
         std::vector<double> crossFrequencies;
         std::vector<double> compressionRatios;
         std::vector<double> kneepoints;
+        std::vector<double> kneepointGains;
         double attack;
         double release;
         int channels;
@@ -84,6 +85,7 @@ public:
         std::vector<double> crossFrequencies;
         std::vector<double> compressionRatios;
         std::vector<double> kneepoints;
+        std::vector<double> kneepointGains;
         std::string filterType;
         std::string feedback;
         double attack;

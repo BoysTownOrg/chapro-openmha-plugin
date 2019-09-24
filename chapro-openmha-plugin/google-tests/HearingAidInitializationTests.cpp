@@ -18,6 +18,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> agcCrossFrequencies_;
     std::vector<double> agcCompressionRatios_;
     std::vector<double> agcKneepoints_;
+    std::vector<double> agcKneepointGains_;
     double agcAttack_{};
     double agcRelease_{};
     double firSampleRate_{};
@@ -74,6 +75,10 @@ public:
 
     auto feedbackGain() const {
         return feedbackGain_;
+    }
+
+    auto agcKneepointGains() const {
+        return agcKneepointGains_;
     }
 
     auto agcKneepoints() const {
@@ -180,6 +185,7 @@ public:
         agcRelease_ = p.release;
         agcCompressionRatios_ = p.compressionRatios;
         agcKneepoints_ = p.kneepoints;
+        agcKneepointGains_ = p.kneepointGains;
     }
 };
 
@@ -236,6 +242,10 @@ protected:
         p.kneepoints = std::move(x);
     }
 
+    void setKneepointGains(std::vector<double> x) {
+        p.kneepointGains = std::move(x);
+    }
+
     void setAttack(double x) {
         p.attack = x;
     }
@@ -262,6 +272,10 @@ protected:
 
     void assertAgcKneepoints(const std::vector<double> &x) {
         assertEqual(x, initializer_.agcKneepoints());
+    }
+
+    void assertAgcKneepointGains(const std::vector<double> &x) {
+        assertEqual(x, initializer_.agcKneepointGains());
     }
 
     void assertFirChannels(int n) {
@@ -483,6 +497,7 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     setRelease(6);
     setCompressionRatios({ 7, 8, 9 });
     setKneepoints({10, 11, 12});
+    setKneepointGains({13, 14, 15});
     initialize();
     assertAgcCrossFrequencies({ 1, 2, 3 });
     assertAgcChannels(3+1);
@@ -490,5 +505,6 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     assertAgcRelease(6);
     assertAgcCompressionRatios({ 7, 8, 9 });
     assertAgcKneepoints({10, 11, 12});
+    assertAgcKneepointGains({13, 14, 15});
 }
 }}
