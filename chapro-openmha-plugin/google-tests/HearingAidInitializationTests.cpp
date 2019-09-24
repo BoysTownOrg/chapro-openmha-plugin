@@ -16,6 +16,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> firCrossFrequencies_;
     std::vector<double> iirCrossFrequencies_;
     std::vector<double> agcCrossFrequencies_;
+    double agcAttack_{};
     double firSampleRate_{};
     double iirSampleRate_{};
     double feedbackGain_{};
@@ -100,6 +101,10 @@ public:
         return iirSampleRate_;
     }
 
+    auto agcAttack() const {
+        return agcAttack_;
+    }
+
     auto agcChannels() const {
         return agcChannels_;
     }
@@ -156,6 +161,7 @@ public:
     void initializeAutomaticGainControl(const AutomaticGainControl &p) override {
         agcCrossFrequencies_ = p.crossFrequencies;
         agcChannels_ = p.channels;
+        agcAttack_ = p.attack;
     }
 };
 
@@ -204,6 +210,10 @@ protected:
         p.crossFrequencies = std::move(x);
     }
 
+    void setAttack(double x) {
+        p.attack = x;
+    }
+
     void assertFirCrossFrequencies(const std::vector<double> &x) {
         assertEqual(x, initializer_.firCrossFrequencies());
     }
@@ -226,6 +236,10 @@ protected:
 
     void assertAgcChannels(int n) {
         assertEqual(n, initializer_.agcChannels());
+    }
+
+    void assertAgcAttack(double x) {
+        assertEqual(x, initializer_.agcAttack());
     }
 
     void setSampleRate(double r) {
@@ -423,8 +437,10 @@ TEST_F(
 
 TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     setCrossFrequencies({ 1, 2, 3 });
+    setAttack(5);
     initialize();
     assertAgcCrossFrequencies({ 1, 2, 3 });
     assertAgcChannels(3+1);
+    assertAgcAttack(5);
 }
 }}

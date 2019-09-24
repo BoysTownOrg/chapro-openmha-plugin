@@ -37,6 +37,7 @@ public:
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
     struct AutomaticGainControl {
         std::vector<double> crossFrequencies;
+        double attack;
         int channels;
     };
     virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
@@ -80,6 +81,7 @@ public:
         std::vector<double> crossFrequencies;
         std::string filterType;
         std::string feedback;
+        double attack;
         double sampleRate;
         double feedbackGain;
         double filterEstimationForgettingFactor;
