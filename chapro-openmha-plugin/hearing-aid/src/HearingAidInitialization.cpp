@@ -45,6 +45,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     automaticGainControl.crossFrequencies = p.crossFrequencies;
     automaticGainControl.channels = p.crossFrequencies.size()+1;
     automaticGainControl.attack = p.attack;
+    automaticGainControl.release = p.release;
     initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 }

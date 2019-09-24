@@ -38,6 +38,7 @@ public:
     struct AutomaticGainControl {
         std::vector<double> crossFrequencies;
         double attack;
+        double release;
         int channels;
     };
     virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
@@ -82,6 +83,7 @@ public:
         std::string filterType;
         std::string feedback;
         double attack;
+        double release;
         double sampleRate;
         double feedbackGain;
         double filterEstimationForgettingFactor;
