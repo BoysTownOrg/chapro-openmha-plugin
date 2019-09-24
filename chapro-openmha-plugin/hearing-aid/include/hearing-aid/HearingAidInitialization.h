@@ -26,6 +26,7 @@ public:
     struct FeedbackManagement {
         double gain;
         double filterEstimationForgettingFactor;
+        double filterEstimationPowerThreshold;
         int adaptiveFilterLength;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
@@ -72,6 +73,7 @@ public:
         double sampleRate;
         double feedbackGain;
         double filterEstimationForgettingFactor;
+        double filterEstimationPowerThreshold;
         int adaptiveFeedbackFilterLength;
         int windowSize;
         int chunkSize;
@@ -97,6 +99,7 @@ public:
         }
         HearingAidInitializer::FeedbackManagement feedbackManagement;
         feedbackManagement.filterEstimationForgettingFactor = p.filterEstimationForgettingFactor;
+        feedbackManagement.filterEstimationPowerThreshold = p.filterEstimationPowerThreshold;
         if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;

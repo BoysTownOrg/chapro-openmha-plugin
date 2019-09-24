@@ -19,6 +19,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double iirSampleRate_{};
     double feedbackGain_{};
     double filterEstimationForgettingFactor_{};
+    double filterEstimationPowerThreshold_{};
     int firChannels_{};
     int iirChannels_{};
     int firWindowSize_{};
@@ -30,6 +31,10 @@ class HearingAidInitializerStub : public HearingAidInitializer {
 public:
     auto adaptiveFeedbackFilterLength() const {
         return adaptiveFeedbackFilterLength_;
+    }
+
+    auto filterEstimationPowerThreshold() const {
+        return filterEstimationPowerThreshold_;
     }
 
     auto filterEstimationForgettingFactor() const {
@@ -105,6 +110,7 @@ public:
         feedbackGain_ = p.gain;
         adaptiveFeedbackFilterLength_ = p.adaptiveFilterLength;
         filterEstimationForgettingFactor_ = p.filterEstimationForgettingFactor;
+        filterEstimationPowerThreshold_ = p.filterEstimationPowerThreshold;
     }
 };
 
@@ -225,8 +231,16 @@ protected:
         p.filterEstimationForgettingFactor = rho;
     }
 
+    void setFilterEstimationPowerThreshold(double eps) {
+        p.filterEstimationPowerThreshold = eps;
+    }
+
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
+    }
+
+    void assertFilterEstimationPowerThreshold(double eps) {
+        assertEqual(eps, initializer_.filterEstimationPowerThreshold());
     }
 
     void assertFeedbackGain(double x) {
@@ -296,9 +310,11 @@ TEST_F(
     setFeedbackGain(1);
     setAdaptiveFeedbackFilterLength(2);
     setFilterEstimationForgettingFactor(3);
+    setFilterEstimationPowerThreshold(4);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
     assertFilterEstimationForgettingFactor(3);
+    assertFilterEstimationPowerThreshold(4);
 }
 }}
