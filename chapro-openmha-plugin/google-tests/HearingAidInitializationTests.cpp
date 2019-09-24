@@ -30,9 +30,14 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     int signalWhiteningFilterLength_{};
     int persistentFeedbackFilterLength_{};
     int hardwareLatency_{};
+    int saveQualityMetric_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto saveQualityMetric() const {
+        return saveQualityMetric_;
+    }
+
     auto hardwareLatency() const {
         return hardwareLatency_;
     }
@@ -135,6 +140,7 @@ public:
         signalWhiteningFilterLength_ = p.signalWhiteningFilterLength;
         persistentFeedbackFilterLength_ = p.persistentFeedbackFilterLength;
         hardwareLatency_ = p.hardwareLatency;
+        saveQualityMetric_ = p.saveQualityMetric;
     }
 };
 
@@ -274,6 +280,10 @@ protected:
     void setHardwareLatency(int hdl) {
         p.hardwareLatency = hdl;
     }
+    
+    void setSaveQualityMetric(int sqm) {
+        p.saveQualityMetric = sqm;
+    }
 
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
@@ -297,6 +307,10 @@ protected:
 
     void assertHardwareLatency(int hdl) {
         assertEqual(hdl, initializer_.hardwareLatency());
+    }
+
+    void assertSaveQualityMetric(int sqm) {
+        assertEqual(sqm, initializer_.saveQualityMetric());
     }
 
     void assertFeedbackGain(double x) {
@@ -371,6 +385,7 @@ TEST_F(
     setSignalWhiteningFilterLength(6);
     setPersistentFeedbackFilterLength(7);
     setHardwareLatency(8);
+    setSaveQualityMetric(9);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
@@ -380,5 +395,6 @@ TEST_F(
     assertSignalWhiteningFilterLength(6);
     assertPersistentFeedbackFilterLength(7);
     assertHardwareLatency(8);
+    assertSaveQualityMetric(9);
 }
 }}

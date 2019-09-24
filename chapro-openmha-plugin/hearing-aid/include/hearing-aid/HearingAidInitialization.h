@@ -32,6 +32,7 @@ public:
         int signalWhiteningFilterLength;
         int persistentFeedbackFilterLength;
         int hardwareLatency;
+        int saveQualityMetric;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
 };
@@ -83,6 +84,7 @@ public:
         int signalWhiteningFilterLength;
         int persistentFeedbackFilterLength;
         int hardwareLatency;
+        int saveQualityMetric;
         int windowSize;
         int chunkSize;
     };
@@ -112,6 +114,7 @@ public:
         feedbackManagement.signalWhiteningFilterLength = p.signalWhiteningFilterLength;
         feedbackManagement.persistentFeedbackFilterLength = p.persistentFeedbackFilterLength;
         feedbackManagement.hardwareLatency = p.hardwareLatency;
+        feedbackManagement.saveQualityMetric = p.saveQualityMetric;
         if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
