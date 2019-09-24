@@ -18,6 +18,12 @@ extern "C" {
 
 #include <gsl/gsl>
 
+static void copy(const std::vector<double> &source, double *destination) {
+    using size_type = std::vector<double>::size_type;
+    for (size_type i = 0; i < source.size(); ++i)
+        destination[i] = source.at(i);
+}
+
 class ChaproInitializer : public hearing_aid::HearingAidInitializer {
     CHA_PTR cha_pointer;
 public:
@@ -83,6 +89,28 @@ public:
         afc.fbg = parameters.gain;
         afc.nqm = 0;
         cha_afc_prepare(cha_pointer, &afc);
+    }
+
+    void initializeAutomaticGainControl(const AutomaticGainControl &parameters) override {
+        CHA_DSL dsl{};
+        dsl.attack = parameters.attack;
+        dsl.release = parameters.release;
+        dsl.nchannel = parameters.channels;
+        copy(parameters.crossFrequencies, dsl.cross_freq);
+        copy(parameters.compressionRatios, dsl.cr);
+        copy(parameters.kneepoints, dsl.tk);
+        copy(parameters.kneepointGains, dsl.tkgain);
+        copy(parameters.broadbandOutputLimitingThresholds, dsl.bolt);
+        CHA_WDRC wdrc;
+        wdrc.attack = 1;
+        wdrc.release = 50;
+        wdrc.fs = parameters.sampleRate;
+        wdrc.maxdB = parameters.fullScaleLevel;
+        wdrc.tkgain = 0;
+        wdrc.tk = 105;
+        wdrc.cr = 10;
+        wdrc.bolt = 105;
+        cha_agc_prepare(cha_pointer, &dsl, &wdrc);
     }
 };
 
@@ -161,12 +189,6 @@ public:
     int chunkSize() override;
     int channels() override;
 };
-
-static void copy(const std::vector<double> &source, double *destination) {
-    using size_type = std::vector<double>::size_type;
-    for (size_type i = 0; i < source.size(); ++i)
-        destination[i] = source.at(i);
-}
 
 Chapro::Chapro(const Parameters &parameters) :
     channels_{ parameters.channels },
