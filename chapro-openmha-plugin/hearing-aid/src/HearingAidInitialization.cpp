@@ -10,8 +10,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
         firParameters.windowSize = p.windowSize;
         firParameters.chunkSize = p.chunkSize;
         initializer->initializeFirFilter(firParameters);
-    }
-    else {
+    } else {
         HearingAidInitializer::IirParameters iirParameters;
         iirParameters.crossFrequencies = p.crossFrequencies;
         iirParameters.channels = p.crossFrequencies.size() + 1;
@@ -20,16 +19,21 @@ void HearingAidInitialization::initialize(const Parameters &p) {
         initializer->initializeIirFilter(iirParameters);
     }
     HearingAidInitializer::FeedbackManagement feedbackManagement;
-    feedbackManagement.filterEstimationForgettingFactor = p.filterEstimationForgettingFactor;
-    feedbackManagement.filterEstimationPowerThreshold = p.filterEstimationPowerThreshold;
+    feedbackManagement.filterEstimationForgettingFactor =
+        p.filterEstimationForgettingFactor;
+    feedbackManagement.filterEstimationPowerThreshold =
+        p.filterEstimationPowerThreshold;
     feedbackManagement.filterEstimationStepSize = p.filterEstimationStepSize;
-    feedbackManagement.signalWhiteningFilterLength = p.signalWhiteningFilterLength;
-    feedbackManagement.persistentFeedbackFilterLength = p.persistentFeedbackFilterLength;
+    feedbackManagement.signalWhiteningFilterLength =
+        p.signalWhiteningFilterLength;
+    feedbackManagement.persistentFeedbackFilterLength =
+        p.persistentFeedbackFilterLength;
     feedbackManagement.hardwareLatency = p.hardwareLatency;
     feedbackManagement.saveQualityMetric = p.saveQualityMetric;
     if (p.feedback == name(Feedback::on)) {
         feedbackManagement.gain = p.feedbackGain;
-        feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
+        feedbackManagement.adaptiveFilterLength =
+            p.adaptiveFeedbackFilterLength;
     }
     else {
         feedbackManagement.gain = 0;
