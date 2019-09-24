@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
-class SuperSignalProcessorStub : public SuperSignalProcessor {
+class SuperSignalProcessorStub : public SuperSignalProcessor, public Filter {
     LogString log_;
     complex_signal_type filterbankSynthesizeInput_;
     complex_signal_type compressChannelOutput_;
@@ -217,7 +217,7 @@ protected:
     }
 
     void process(signal_type x) {
-        AfcHearingAid hearingAid{superSignalProcessor};
+        AfcHearingAid hearingAid{superSignalProcessor, superSignalProcessor};
         hearingAid.process(x);
     }
 
@@ -240,7 +240,7 @@ protected:
     }
 
     void assertEachComplexSize(
-        SuperSignalProcessor::complex_signal_type::size_type c
+        complex_signal_type::size_type c
     ) {
         assertEqual(c, superSignalProcessor->filterbankAnalyzeOutput().size());
         assertEqual(c, superSignalProcessor->compressChannelInput().size());

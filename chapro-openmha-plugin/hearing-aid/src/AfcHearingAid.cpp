@@ -2,10 +2,12 @@
 
 namespace hearing_aid {
 AfcHearingAid::AfcHearingAid(
-    std::shared_ptr<SuperSignalProcessor> processor
+    std::shared_ptr<SuperSignalProcessor> processor,
+    std::shared_ptr<Filter> filter
 ) :
     buffer(2 * processor->chunkSize() * processor->channels()),
-    processor{std::move(processor)} {}
+    processor{std::move(processor)},
+    filter{std::move(filter)} {}
 
 void AfcHearingAid::process(signal_type signal)  {
     const auto chunkSize = processor->chunkSize();
@@ -13,9 +15,9 @@ void AfcHearingAid::process(signal_type signal)  {
         return;
     processor->feedbackCancelInput(signal, signal, chunkSize);
     processor->compressInput(signal, signal, chunkSize);
-    processor->filterbankAnalyze(signal, buffer, chunkSize);
+    filter->filterbankAnalyze(signal, buffer, chunkSize);
     processor->compressChannel(buffer, buffer, chunkSize);
-    processor->filterbankSynthesize(buffer, signal, chunkSize);
+    filter->filterbankSynthesize(buffer, signal, chunkSize);
     processor->compressOutput(signal, signal, chunkSize);
     processor->feedbackCancelOutput(signal, chunkSize);
 }

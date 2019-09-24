@@ -6,6 +6,25 @@
 #include <vector>
 
 namespace hearing_aid {
+using real_type = float;
+using complex_type = float;
+using complex_signal_type = gsl::span<complex_type>;
+using real_signal_type = gsl::span<real_type>;
+class Filter {
+public:
+    virtual ~Filter() = default;
+    virtual void filterbankAnalyze(
+        real_signal_type,
+        complex_signal_type,
+        int
+    ) = 0;
+    virtual void filterbankSynthesize(
+        complex_signal_type,
+        real_signal_type,
+        int
+    ) = 0;
+};
+
 class SuperSignalProcessor {
 public:
     struct Parameters {
@@ -30,10 +49,6 @@ public:
         int chunkSize;
         int channels;
     };
-    using real_type = float;
-    using complex_type = float;
-    using complex_signal_type = gsl::span<complex_type>;
-    using real_signal_type = gsl::span<real_type>;
     virtual ~SuperSignalProcessor() = default;
     virtual void feedbackCancelInput(
         real_signal_type,
@@ -41,19 +56,9 @@ public:
         int
     ) = 0;
     virtual void compressInput(real_signal_type, real_signal_type, int) = 0;
-    virtual void filterbankAnalyze(
-        real_signal_type,
-        complex_signal_type,
-        int
-    ) = 0;
     virtual void compressChannel(
         complex_signal_type,
         complex_signal_type,
-        int
-    ) = 0;
-    virtual void filterbankSynthesize(
-        complex_signal_type,
-        real_signal_type,
         int
     ) = 0;
     virtual void compressOutput(real_signal_type, real_signal_type, int) = 0;
@@ -63,11 +68,15 @@ public:
 };
 
 class AfcHearingAid {
-    std::vector<SuperSignalProcessor::complex_type> buffer;
+    std::vector<complex_type> buffer;
     std::shared_ptr<SuperSignalProcessor> processor;
+    std::shared_ptr<Filter> filter;
 public:
-    using signal_type = gsl::span<SuperSignalProcessor::real_type>;
-    explicit AfcHearingAid(std::shared_ptr<SuperSignalProcessor>);
+    using signal_type = gsl::span<real_type>;
+    AfcHearingAid(
+        std::shared_ptr<SuperSignalProcessor>,
+        std::shared_ptr<Filter>
+    );
     void process(signal_type signal);
 };
 }

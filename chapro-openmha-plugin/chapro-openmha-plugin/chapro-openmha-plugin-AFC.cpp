@@ -86,11 +86,13 @@ public:
     }
 };
 
-class Chapro : public hearing_aid::SuperSignalProcessor {
+class Chapro : public hearing_aid::SuperSignalProcessor, public hearing_aid::Filter {
     void *cha_pointer[NPTR]{};
     const int channels_;
     const int chunkSize_;
 public:
+    using real_signal_type = hearing_aid::real_signal_type;
+    using complex_signal_type = hearing_aid::complex_signal_type;
     explicit Chapro(const Parameters &);
     ~Chapro() noexcept override;
     Chapro(Chapro &&) = delete;
@@ -356,7 +358,7 @@ public:
         p.kneepoints_dBSpl =
             {tk.data.begin(), tk.data.end()};
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
-            std::make_unique<Chapro>(p)
+            std::make_unique<Chapro>(p), nullptr
         );
     }
 };
