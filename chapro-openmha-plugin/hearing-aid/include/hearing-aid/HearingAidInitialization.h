@@ -37,6 +37,7 @@ public:
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
     struct AutomaticGainControl {
         std::vector<double> crossFrequencies;
+        int channels;
     };
     virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
 };

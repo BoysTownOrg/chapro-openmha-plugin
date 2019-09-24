@@ -24,6 +24,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double filterEstimationStepSize_{};
     int firChannels_{};
     int iirChannels_{};
+    int agcChannels_{};
     int firWindowSize_{};
     int firChunkSize_{};
     int iirChunkSize_{};
@@ -99,6 +100,10 @@ public:
         return iirSampleRate_;
     }
 
+    auto agcChannels() const {
+        return agcChannels_;
+    }
+
     auto iirChannels() const {
         return iirChannels_;
     }
@@ -150,6 +155,7 @@ public:
 
     void initializeAutomaticGainControl(const AutomaticGainControl &p) override {
         agcCrossFrequencies_ = p.crossFrequencies;
+        agcChannels_ = p.channels;
     }
 };
 
@@ -216,6 +222,10 @@ protected:
 
     void assertIirChannels(int n) {
         assertEqual(n, initializer_.iirChannels());
+    }
+
+    void assertAgcChannels(int n) {
+        assertEqual(n, initializer_.agcChannels());
     }
 
     void setSampleRate(double r) {
@@ -415,5 +425,6 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     setCrossFrequencies({ 1, 2, 3 });
     initialize();
     assertAgcCrossFrequencies({ 1, 2, 3 });
+    assertAgcChannels(3+1);
 }
 }}
