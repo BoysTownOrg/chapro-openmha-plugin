@@ -25,6 +25,7 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     double firSampleRate_{};
     double iirSampleRate_{};
     double agcSampleRate_{};
+    double agcFullScaleLevel_{};
     double feedbackGain_{};
     double filterEstimationForgettingFactor_{};
     double filterEstimationPowerThreshold_{};
@@ -123,6 +124,10 @@ public:
         return iirSampleRate_;
     }
 
+    auto agcFullScaleLevel() const {
+        return agcFullScaleLevel_;
+    }
+
     auto agcSampleRate() const {
         return agcSampleRate_;
     }
@@ -198,6 +203,7 @@ public:
         agcKneepointGains_ = p.kneepointGains;
         agcBroadbandOutputLimitingThresholds_ = p.broadbandOutputLimitingThresholds;
         agcSampleRate_ = p.sampleRate;
+        agcFullScaleLevel_ = p.fullScaleLevel;
     }
 };
 
@@ -322,8 +328,16 @@ protected:
         assertEqual(x, initializer_.agcSampleRate());
     }
 
+    void assertAgcFullScaleLevel(double x) {
+        assertEqual(x, initializer_.agcFullScaleLevel());
+    }
+
     void setSampleRate(double r) {
         p.sampleRate = r;
+    }
+
+    void setFullScaleLevel(double r) {
+        p.fullScaleLevel = r;
     }
 
     void assertFirSampleRate(double r) {
@@ -524,6 +538,7 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     setKneepointGains({13, 14, 15});
     setBroadbandOutputLimitingThresholds({16, 17, 18});
     setSampleRate(19);
+    setFullScaleLevel(20);
     initialize();
     assertAgcCrossFrequencies({ 1, 2, 3 });
     assertAgcChannels(3+1);
@@ -534,5 +549,6 @@ TEST_F(HearingAidInitializationTests, passesAgcParameters) {
     assertAgcKneepointGains({13, 14, 15});
     assertAgcBroadbandOutputLimitingThresholds({16, 17, 18});
     assertAgcSampleRate(19);
+    assertAgcFullScaleLevel(20);
 }
 }}

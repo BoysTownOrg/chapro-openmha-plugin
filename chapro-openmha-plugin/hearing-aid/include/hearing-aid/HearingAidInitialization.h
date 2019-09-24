@@ -44,6 +44,7 @@ public:
         double attack;
         double release;
         double sampleRate;
+        double fullScaleLevel;
         int channels;
     };
     virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
@@ -94,6 +95,7 @@ public:
         double attack;
         double release;
         double sampleRate;
+        double fullScaleLevel;
         double feedbackGain;
         double filterEstimationForgettingFactor;
         double filterEstimationPowerThreshold;
