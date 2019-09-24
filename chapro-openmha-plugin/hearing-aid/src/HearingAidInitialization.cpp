@@ -34,8 +34,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
         feedbackManagement.gain = p.feedbackGain;
         feedbackManagement.adaptiveFilterLength =
             p.adaptiveFeedbackFilterLength;
-    }
-    else {
+    } else {
         feedbackManagement.gain = 0;
         feedbackManagement.adaptiveFilterLength = 0;
     }
@@ -49,7 +48,8 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     automaticGainControl.compressionRatios = p.compressionRatios;
     automaticGainControl.kneepoints = p.kneepoints;
     automaticGainControl.kneepointGains = p.kneepointGains;
-    automaticGainControl.broadbandOutputLimitingThresholds = p.broadbandOutputLimitingThresholds;
+    automaticGainControl.broadbandOutputLimitingThresholds =
+        p.broadbandOutputLimitingThresholds;
     initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 }
