@@ -264,23 +264,23 @@ protected:
     void setFilterEstimationPowerThreshold(double eps) {
         p.filterEstimationPowerThreshold = eps;
     }
-    
+
     void setFilterEstimationStepSize(double mu) {
         p.filterEstimationStepSize = mu;
     }
-    
+
     void setSignalWhiteningFilterLength(int wfl) {
         p.signalWhiteningFilterLength = wfl;
     }
-    
+
     void setPersistentFeedbackFilterLength(int pfl) {
         p.persistentFeedbackFilterLength = pfl;
     }
-    
+
     void setHardwareLatency(int hdl) {
         p.hardwareLatency = hdl;
     }
-    
+
     void setSaveQualityMetric(int sqm) {
         p.saveQualityMetric = sqm;
     }
