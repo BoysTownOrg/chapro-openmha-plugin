@@ -1,9 +1,9 @@
 #include "mha_plugin.hh"
 #include <hearing-aid/AfcHearingAid.h>
+#include <hearing-aid/HearingAidInitialization.h>
 extern "C" {
 #include <chapro.h>
 }
-#include <gsl/gsl>
 
 // These are defined in chapro.h but appear in some standard headers
 #undef _size
@@ -15,6 +15,76 @@ extern "C" {
 #undef dzero
 #undef round
 #undef log2
+
+#include <gsl/gsl>
+
+class ChaproInitializer : public hearing_aid::HearingAidInitializer {
+    CHA_PTR cha_pointer;
+public:
+    ChaproInitializer(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+
+    void initializeFirFilter(const FirParameters &p) override {
+        const auto hamming = 0;
+        auto mutableCrossFrequencies = p.crossFrequencies;
+        cha_firfb_prepare(
+            cha_pointer,
+            mutableCrossFrequencies.data(),
+            p.channels,
+            p.sampleRate,
+            p.windowSize,
+            hamming,
+            p.chunkSize
+        );
+    }
+
+    void initializeIirFilter(const IirParameters &p) override {
+        int zerosCount = 4;
+        auto size_ = 2*p.channels*zerosCount;
+        std::vector<float> zeros(size_);
+        std::vector<float> poles(size_);
+        std::vector<float> gain(p.channels);
+        std::vector<int> delay(p.channels);
+        double ir_delay_ms = 2.5;
+        auto mutableCrossFrequencies = p.crossFrequencies;
+        cha_iirfb_design(
+            zeros.data(),
+            poles.data(),
+            gain.data(),
+            delay.data(),
+            mutableCrossFrequencies.data(),
+            p.channels,
+            zerosCount,
+            p.sampleRate,
+            ir_delay_ms
+        );
+        cha_iirfb_prepare(
+            cha_pointer,
+            zeros.data(),
+            poles.data(),
+            gain.data(),
+            delay.data(),
+            p.channels,
+            zerosCount,
+            p.sampleRate,
+            p.chunkSize
+        );
+    }
+
+    void initializeFeedbackManagement(const FeedbackManagement &parameters) override {
+        CHA_AFC afc;
+        afc.rho = parameters.filterEstimationForgettingFactor;
+        afc.eps = parameters.filterEstimationPowerThreshold;
+        afc.mu = parameters.filterEstimationStepSize;
+        afc.afl = parameters.adaptiveFilterLength;
+        afc.wfl = parameters.signalWhiteningFilterLength;
+        afc.pfl = parameters.persistentFeedbackFilterLength;
+        afc.hdel = parameters.hardwareLatency;
+        afc.sqm = parameters.saveQualityMetric;
+        afc.fbg = parameters.gain;
+        afc.nqm = 0;
+        cha_afc_prepare(cha_pointer, &afc);
+    }
+};
 
 class Chapro : public hearing_aid::SuperSignalProcessor {
     void *cha_pointer[NPTR]{};
@@ -183,6 +253,8 @@ class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
     MHAParser::vfloat_t tk;
     MHAParser::vfloat_t tkgain;
     MHAParser::vfloat_t bolt;
+    MHAParser::string_t feedback_management;
+    MHAParser::string_t filter_type;
     MHAParser::float_t attack;
     MHAParser::float_t release;
     MHAParser::float_t maxdB;
@@ -195,6 +267,7 @@ class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
     MHAParser::int_t wfl;
     MHAParser::int_t pfl;
     MHAParser::int_t hdel;
+    MHAParser::int_t nw;
     std::unique_ptr<hearing_aid::AfcHearingAid> hearingAid;
 public:
     ChaproOpenMhaPlugin(
@@ -208,6 +281,8 @@ public:
         tk{"compression-start kneepoint", "[0]", "[,]"},
         tkgain{"compression-start gain", "[0]", "[,]"},
         bolt{"broadband output limiting threshold", "[0]", "[,]"},
+        feedback_management{"enable feedback management (yes, no)", "yes"},
+        filter_type{"filter type (FIR, IIR)", "IIR"},
         attack{"attack time (ms)", "0", "[,]"},
         release{"release time (ms)", "0", "[,]"},
         maxdB{"maximum output (dB SPL)", "0", "[,]"},
@@ -219,13 +294,16 @@ public:
         afl{"length of adaptive-feedback-filter response", "0", "[,]"},
         wfl{"length of signal-whitening-filter response", "0", "[,]"},
         pfl{"length of persistent-feedback-filter response", "0", "[,]"},
-        hdel{"output-to-input hardware delay (samples)", "0", "[,]"}
+        hdel{"output-to-input hardware delay (samples)", "0", "[,]"},
+        nw{"window size (samples)", "0", "[,]"}
     {
         insert_item("cross_freq", &cross_freq);
         insert_item("cr", &cr);
         insert_item("tk", &tk);
         insert_item("tkgain", &tkgain);
         insert_item("bolt", &bolt);
+        insert_item("feedback_management", &feedback_management);
+        insert_item("filter_type", &filter_type);
         insert_item("attack", &attack);
         insert_item("release", &release);
         insert_item("maxdB", &maxdB);
@@ -238,6 +316,7 @@ public:
         insert_item("wfl", &wfl);
         insert_item("pfl", &pfl);
         insert_item("hdel", &hdel);
+        insert_item("nw", &nw);
     }
 
     mha_wave_t *process(mha_wave_t * signal) {
