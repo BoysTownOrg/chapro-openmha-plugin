@@ -434,6 +434,36 @@ public:
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
             std::make_unique<Chapro>(p), nullptr
         );
+        hearing_aid::HearingAidInitialization::Parameters q;
+        q.sampleRate = configuration.srate;
+        q.chunkSize = configuration.fragsize;
+        q.attack = attack.data;
+        q.release = release.data;
+        q.fullScaleLevel = maxdB.data;
+        q.filterEstimationStepSize = mu.data;
+        q.filterEstimationForgettingFactor = rho.data;
+        q.filterEstimationPowerThreshold = eps.data;
+        q.feedbackGain = fbg.data;
+        q.saveQualityMetric = sqm.data;
+        q.adaptiveFeedbackFilterLength = afl.data;
+        q.signalWhiteningFilterLength = wfl.data;
+        q.persistentFeedbackFilterLength = pfl.data;
+        q.hardwareLatency = hdel.data;
+        q.windowSize = nw.data;
+        q.filterType = filter_type.data;
+        q.feedback = feedback_management.data;
+        q.compressionRatios = {cr.data.begin(), cr.data.end()};
+        q.broadbandOutputLimitingThresholds =
+            {bolt.data.begin(), bolt.data.end()};
+        q.crossFrequencies =
+            {cross_freq.data.begin(), cross_freq.data.end()};
+        q.kneepointGains =
+            {tkgain.data.begin(), tkgain.data.end()};
+        q.kneepoints =
+            {tk.data.begin(), tk.data.end()};
+        ChaproInitializer chaproInitializer{nullptr};
+        hearing_aid::HearingAidInitialization initialization{&chaproInitializer};
+        initialization.initialize(q);
     }
 };
 
