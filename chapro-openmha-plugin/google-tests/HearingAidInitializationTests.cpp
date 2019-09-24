@@ -29,9 +29,14 @@ class HearingAidInitializerStub : public HearingAidInitializer {
     int adaptiveFeedbackFilterLength_{};
     int signalWhiteningFilterLength_{};
     int persistentFeedbackFilterLength_{};
+    int hardwareLatency_{};
     bool firInitialized_{};
     bool iirInitialized_{};
 public:
+    auto hardwareLatency() const {
+        return hardwareLatency_;
+    }
+
     auto persistentFeedbackFilterLength() const {
         return persistentFeedbackFilterLength_;
     }
@@ -129,6 +134,7 @@ public:
         filterEstimationStepSize_ = p.filterEstimationStepSize;
         signalWhiteningFilterLength_ = p.signalWhiteningFilterLength;
         persistentFeedbackFilterLength_ = p.persistentFeedbackFilterLength;
+        hardwareLatency_ = p.hardwareLatency;
     }
 };
 
@@ -264,6 +270,10 @@ protected:
     void setPersistentFeedbackFilterLength(int pfl) {
         p.persistentFeedbackFilterLength = pfl;
     }
+    
+    void setHardwareLatency(int hdl) {
+        p.hardwareLatency = hdl;
+    }
 
     void assertFilterEstimationForgettingFactor(double rho) {
         assertEqual(rho, initializer_.filterEstimationForgettingFactor());
@@ -283,6 +293,10 @@ protected:
 
     void assertPersistentFeedbackFilterLength(int pfl) {
         assertEqual(pfl, initializer_.persistentFeedbackFilterLength());
+    }
+
+    void assertHardwareLatency(int hdl) {
+        assertEqual(hdl, initializer_.hardwareLatency());
     }
 
     void assertFeedbackGain(double x) {
@@ -356,6 +370,7 @@ TEST_F(
     setFilterEstimationStepSize(5);
     setSignalWhiteningFilterLength(6);
     setPersistentFeedbackFilterLength(7);
+    setHardwareLatency(8);
     initialize();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
@@ -364,5 +379,6 @@ TEST_F(
     assertFilterEstimationStepSize(5);
     assertSignalWhiteningFilterLength(6);
     assertPersistentFeedbackFilterLength(7);
+    assertHardwareLatency(8);
 }
 }}

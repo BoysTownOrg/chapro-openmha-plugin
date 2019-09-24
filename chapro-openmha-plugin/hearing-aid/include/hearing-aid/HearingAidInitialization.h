@@ -31,6 +31,7 @@ public:
         int adaptiveFilterLength;
         int signalWhiteningFilterLength;
         int persistentFeedbackFilterLength;
+        int hardwareLatency;
     };
     virtual void initializeFeedbackManagement(const FeedbackManagement &) = 0;
 };
@@ -81,6 +82,7 @@ public:
         int adaptiveFeedbackFilterLength;
         int signalWhiteningFilterLength;
         int persistentFeedbackFilterLength;
+        int hardwareLatency;
         int windowSize;
         int chunkSize;
     };
@@ -109,6 +111,7 @@ public:
         feedbackManagement.filterEstimationStepSize = p.filterEstimationStepSize;
         feedbackManagement.signalWhiteningFilterLength = p.signalWhiteningFilterLength;
         feedbackManagement.persistentFeedbackFilterLength = p.persistentFeedbackFilterLength;
+        feedbackManagement.hardwareLatency = p.hardwareLatency;
         if (p.feedback == name(Feedback::on)) {
             feedbackManagement.gain = p.feedbackGain;
             feedbackManagement.adaptiveFilterLength = p.adaptiveFeedbackFilterLength;
