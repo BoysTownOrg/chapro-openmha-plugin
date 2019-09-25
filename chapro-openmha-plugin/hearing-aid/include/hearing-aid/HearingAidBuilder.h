@@ -109,7 +109,7 @@ public:
         int chunkSize;
     };
 
-    void initialize(const Parameters &);
+    void build(const Parameters &);
 private:
     int channels(const Parameters &);
 };

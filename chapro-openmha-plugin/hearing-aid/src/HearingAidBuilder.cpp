@@ -1,7 +1,7 @@
 #include "HearingAidBuilder.h"
 
 namespace hearing_aid {
-void HearingAidBuilder::initialize(const Parameters &p) {
+void HearingAidBuilder::build(const Parameters &p) {
     if (p.filterType == name(FilterType::fir)) {
         HearingAidInitializer::FirParameters firParameters;
         firParameters.crossFrequencies = p.crossFrequencies;

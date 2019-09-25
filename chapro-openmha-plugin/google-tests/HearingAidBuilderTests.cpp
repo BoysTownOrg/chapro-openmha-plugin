@@ -209,7 +209,7 @@ public:
 
 class HearingAidBuilderTests : public ::testing::Test {
     HearingAidInitializerStub initializer_;
-    HearingAidBuilder initializer{&initializer_};
+    HearingAidBuilder builder{&initializer_};
     HearingAidBuilder::Parameters p{};
 protected:
     void setFilterType(FilterType t) {
@@ -220,8 +220,8 @@ protected:
         p.filterType = std::move(s);
     }
 
-    void initialize() {
-        initializer.initialize(p);
+    void build() {
+        builder.build(p);
     }
 
     bool firInitialized() {
@@ -455,7 +455,7 @@ protected:
 
 TEST_F(HearingAidBuilderTests, firOnlyInitializesFir) {
     setFilterType(FilterType::fir);
-    initialize();
+    build();
     assertFirInitialized();
     assertIirNotInitialized();
 }
@@ -466,7 +466,7 @@ TEST_F(HearingAidBuilderTests, firPassesParameters) {
     setSampleRate(5);
     setWindowSize(6);
     setChunkSize(7);
-    initialize();
+    build();
     assertFirCrossFrequencies({ 1, 2, 3 });
     assertFirChannels(3+1);
     assertFirSampleRate(5);
@@ -476,7 +476,7 @@ TEST_F(HearingAidBuilderTests, firPassesParameters) {
 
 TEST_F(HearingAidBuilderTests, iirOnlyInitializesIir) {
     setFilterType(FilterType::iir);
-    initialize();
+    build();
     assertIirInitialized();
     assertFirNotInitialized();
 }
@@ -486,7 +486,7 @@ TEST_F(HearingAidBuilderTests, iirPassesParameters) {
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
     setChunkSize(6);
-    initialize();
+    build();
     assertIirCrossFrequencies({ 1, 2, 3 });
     assertIirChannels(3+1);
     assertIirSampleRate(5);
@@ -498,7 +498,7 @@ TEST_F(
     noFeedbackSetsGainAndAdaptiveFilterLengthToZero
 ) {
     setNoFeedback();
-    initialize();
+    build();
     assertFeedbackGain(0);
     assertAdaptiveFeedbackFilterLength(0);
 }
@@ -517,7 +517,7 @@ TEST_F(
     setPersistentFeedbackFilterLength(7);
     setHardwareLatency(8);
     setSaveQualityMetric(9);
-    initialize();
+    build();
     assertFeedbackGain(1);
     assertAdaptiveFeedbackFilterLength(2);
     assertFilterEstimationForgettingFactor(3);
@@ -539,7 +539,7 @@ TEST_F(HearingAidBuilderTests, passesAgcParameters) {
     setBroadbandOutputLimitingThresholds({16, 17, 18});
     setSampleRate(19);
     setFullScaleLevel(20);
-    initialize();
+    build();
     assertAgcCrossFrequencies({ 1, 2, 3 });
     assertAgcChannels(3+1);
     assertAgcAttack(5);
