@@ -35,24 +35,6 @@ public:
 class SuperSignalProcessor {
 public:
     struct Parameters {
-        std::vector<double> crossFrequenciesHz;
-        std::vector<double> compressionRatios;
-        std::vector<double> kneepointGains_dB;
-        std::vector<double> kneepoints_dBSpl;
-        std::vector<double> broadbandOutputLimitingThresholds_dBSpl;
-        double attack_ms;
-        double release_ms;
-        double sampleRate;
-        double max_dB_Spl;
-        double filterEstimationStepSize;
-        double filterEstimationForgettingFactor;
-        double filterEstimationPowerThreshold;
-        double feedbackGain;
-        int saveQualityMetric;
-        int adaptiveFeedbackFilterLength;
-        int signalWhiteningFilterLength;
-        int persistentFeedbackFilterLength;
-        int hardwareLatency;
         int chunkSize;
         int channels;
     };
