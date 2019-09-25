@@ -21,7 +21,7 @@ node('master') {
                         'build-gcc', 
                         { 
                             cmake_generate_build() 
-                            build_plugins()    
+                            cmake_build()    
                         }
                     )
 
@@ -106,17 +106,9 @@ def execute_tests() {
 
 def cross_compile_plugins() {
     cmake_generate_build_with_toolchain('Toolchain-arm-linux-gnueabihf.cmake')
-    build_plugins()
+    cmake_build()
 }
 
 def cmake_generate_build_with_toolchain(toolchain) {
     cmake_generate_build('-DCMAKE_TOOLCHAIN_FILE=../' + toolchain)
-}
-
-def build_plugins() {
-    cmake_build_target('chapro-openmha-plugin')
-}
-
-def cmake_build_target(target) {
-    cmake_build('--target ' + target)
 }
