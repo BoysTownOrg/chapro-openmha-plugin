@@ -180,7 +180,7 @@ public:
     }
 };
 
-class Chapro : public hearing_aid::SuperSignalProcessor, public hearing_aid::Filter {
+class Chapro : public hearing_aid::SuperSignalProcessor {
     CHA_PTR cha_pointer;
     const int channels_;
     const int chunkSize_;
@@ -188,16 +188,9 @@ public:
     using real_signal_type = hearing_aid::real_signal_type;
     using complex_signal_type = hearing_aid::complex_signal_type;
     Chapro(CHA_PTR cha_pointer, const Parameters &);
-    ~Chapro() noexcept override;
-    Chapro(Chapro &&) = delete;
-    Chapro &operator=(Chapro &&) = delete;
-    Chapro(const Chapro &) = delete;
-    Chapro &operator=(const Chapro &) = delete;
     void feedbackCancelInput(real_signal_type, real_signal_type, int) override;
     void compressInput(real_signal_type, real_signal_type, int) override;
-    void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
     void compressChannel(complex_signal_type, complex_signal_type, int) override;
-    void filterbankSynthesize(complex_signal_type, real_signal_type, int) override;
     void compressOutput(real_signal_type, real_signal_type, int) override;
     void feedbackCancelOutput(real_signal_type, int) override;
     int chunkSize() override;
@@ -209,10 +202,6 @@ Chapro::Chapro(CHA_PTR cha_pointer, const Parameters &parameters) :
     channels_{ parameters.channels },
     chunkSize_{ parameters.chunkSize }
 {
-}
-
-Chapro::~Chapro() noexcept {
-    cha_cleanup(cha_pointer);
 }
 
 void Chapro::feedbackCancelInput(
@@ -231,28 +220,12 @@ void Chapro::compressInput(
     cha_agc_input(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
-void Chapro::filterbankAnalyze(
-    real_signal_type input,
-    complex_signal_type output,
-    int chunkSize
-) {
-    cha_iirfb_analyze(cha_pointer, input.data(), output.data(), chunkSize);
-}
-
 void Chapro::compressChannel(
     complex_signal_type input,
     complex_signal_type output,
     int chunkSize
 ) {
     cha_agc_channel(cha_pointer, input.data(), output.data(), chunkSize);
-}
-
-void Chapro::filterbankSynthesize(
-    complex_signal_type input,
-    real_signal_type output,
-    int chunkSize
-) {
-    cha_iirfb_synthesize(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
 void Chapro::compressOutput(
@@ -386,14 +359,14 @@ public:
             {tkgain.data.begin(), tkgain.data.end()};
         q.kneepoints =
             {tk.data.begin(), tk.data.end()};
-        hearingAid.reset(); // releases memory
+        hearing_aid::SuperSignalProcessor::Parameters p;
+        p.chunkSize = configuration.fragsize;
+        p.channels = cross_freq.data.size() + 1;
+        cha_cleanup(cha_pointer); // releases memory, assumes double cleanup is safe
         ChaproInitializer chaproInitializer{cha_pointer};
         ChaproFilterFactory filterFactory{cha_pointer};
         hearing_aid::HearingAidBuilder builder{&chaproInitializer, &filterFactory};
         builder.build(q); // acquires memory
-        hearing_aid::SuperSignalProcessor::Parameters p;
-        p.chunkSize = configuration.fragsize;
-        p.channels = cross_freq.data.size() + 1;
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
             std::make_unique<Chapro>(cha_pointer, p), builder.filter()
         );
