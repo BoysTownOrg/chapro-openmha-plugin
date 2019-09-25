@@ -1,5 +1,4 @@
-add_library(hearing-aid 
-    src/HearingAid.cpp
+add_library(hearing-aid
     src/AfcHearingAid.cpp
     src/HearingAidBuilder.cpp
 )

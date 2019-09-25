@@ -61,12 +61,11 @@ class AfcHearingAid {
     std::shared_ptr<SuperSignalProcessor> processor;
     std::shared_ptr<Filter> filter;
 public:
-    using signal_type = gsl::span<real_type>;
     AfcHearingAid(
         std::shared_ptr<SuperSignalProcessor>,
         std::shared_ptr<Filter>
     );
-    void process(signal_type signal);
+    void process(real_signal_type signal);
 };
 }
 

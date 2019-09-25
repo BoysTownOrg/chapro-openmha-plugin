@@ -1,5 +1,4 @@
-add_executable(google-tests 
-    HearingAidTests.cpp
+add_executable(google-tests
     AfcHearingAidTests.cpp
     HearingAidBuilderTests.cpp
 )

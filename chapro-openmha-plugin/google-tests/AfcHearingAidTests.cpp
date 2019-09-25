@@ -196,8 +196,7 @@ public:
 
 class AfcHearingAidTests : public ::testing::Test {
 protected:
-    using signal_type = AfcHearingAid::signal_type;
-    using buffer_type = std::vector<signal_type::element_type>;
+    using buffer_type = std::vector<real_signal_type::element_type>;
     std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor =
         std::make_shared<SuperSignalProcessorStub>();
 
@@ -216,7 +215,7 @@ protected:
         process(x);
     }
 
-    void process(signal_type x) {
+    void process(real_signal_type x) {
         AfcHearingAid hearingAid{superSignalProcessor, superSignalProcessor};
         hearingAid.process(x);
     }
@@ -263,7 +262,7 @@ protected:
         );
     }
 
-    void assertEachRealBufferEquals(signal_type x) {
+    void assertEachRealBufferEquals(real_signal_type x) {
         assertEqual(x, superSignalProcessor->feedbackCancelInputInput());
         assertEqual(x, superSignalProcessor->feedbackCancelInputOutput());
         assertEqual(x, superSignalProcessor->filterbankAnalyzeInput());

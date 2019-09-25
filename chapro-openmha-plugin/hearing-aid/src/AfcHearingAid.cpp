@@ -9,7 +9,7 @@ AfcHearingAid::AfcHearingAid(
     processor{std::move(processor)},
     filter{std::move(filter)} {}
 
-void AfcHearingAid::process(signal_type signal)  {
+void AfcHearingAid::process(real_signal_type signal)  {
     const auto chunkSize = processor->chunkSize();
     if (signal.size() != chunkSize)
         return;
