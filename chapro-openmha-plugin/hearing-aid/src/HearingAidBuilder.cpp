@@ -1,7 +1,7 @@
-#include "HearingAidInitialization.h"
+#include "HearingAidBuilder.h"
 
 namespace hearing_aid {
-void HearingAidInitialization::initialize(const Parameters &p) {
+void HearingAidBuilder::initialize(const Parameters &p) {
     if (p.filterType == name(FilterType::fir)) {
         HearingAidInitializer::FirParameters firParameters;
         firParameters.crossFrequencies = p.crossFrequencies;
@@ -55,7 +55,7 @@ void HearingAidInitialization::initialize(const Parameters &p) {
     initializer->initializeAutomaticGainControl(automaticGainControl);
 }
 
-int HearingAidInitialization::channels(const Parameters &p) {
+int HearingAidBuilder::channels(const Parameters &p) {
     return p.crossFrequencies.size() + 1;
 }
 }

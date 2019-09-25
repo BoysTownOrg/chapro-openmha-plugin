@@ -1,5 +1,5 @@
 #include "assert-utility.h"
-#include <hearing-aid/HearingAidInitialization.h>
+#include <hearing-aid/HearingAidBuilder.h>
 #include <gtest/gtest.h>
 #include <string>
 
@@ -207,10 +207,10 @@ public:
     }
 };
 
-class HearingAidInitializationTests : public ::testing::Test {
+class HearingAidBuilderTests : public ::testing::Test {
     HearingAidInitializerStub initializer_;
-    HearingAidInitialization initializer{&initializer_};
-    HearingAidInitialization::Parameters p{};
+    HearingAidBuilder initializer{&initializer_};
+    HearingAidBuilder::Parameters p{};
 protected:
     void setFilterType(FilterType t) {
         setFilterType(name(t));
@@ -453,14 +453,14 @@ protected:
     }
 };
 
-TEST_F(HearingAidInitializationTests, firOnlyInitializesFir) {
+TEST_F(HearingAidBuilderTests, firOnlyInitializesFir) {
     setFilterType(FilterType::fir);
     initialize();
     assertFirInitialized();
     assertIirNotInitialized();
 }
 
-TEST_F(HearingAidInitializationTests, firPassesParameters) {
+TEST_F(HearingAidBuilderTests, firPassesParameters) {
     setFilterType(FilterType::fir);
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
@@ -474,14 +474,14 @@ TEST_F(HearingAidInitializationTests, firPassesParameters) {
     assertFirChunkSize(7);
 }
 
-TEST_F(HearingAidInitializationTests, iirOnlyInitializesIir) {
+TEST_F(HearingAidBuilderTests, iirOnlyInitializesIir) {
     setFilterType(FilterType::iir);
     initialize();
     assertIirInitialized();
     assertFirNotInitialized();
 }
 
-TEST_F(HearingAidInitializationTests, iirPassesParameters) {
+TEST_F(HearingAidBuilderTests, iirPassesParameters) {
     setFilterType(FilterType::iir);
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
@@ -494,7 +494,7 @@ TEST_F(HearingAidInitializationTests, iirPassesParameters) {
 }
 
 TEST_F(
-    HearingAidInitializationTests,
+    HearingAidBuilderTests,
     noFeedbackSetsGainAndAdaptiveFilterLengthToZero
 ) {
     setNoFeedback();
@@ -504,7 +504,7 @@ TEST_F(
 }
 
 TEST_F(
-    HearingAidInitializationTests,
+    HearingAidBuilderTests,
     feedbackPassesParameters
 ) {
     setFeedback();
@@ -529,7 +529,7 @@ TEST_F(
     assertSaveQualityMetric(9);
 }
 
-TEST_F(HearingAidInitializationTests, passesAgcParameters) {
+TEST_F(HearingAidBuilderTests, passesAgcParameters) {
     setCrossFrequencies({ 1, 2, 3 });
     setAttack(5);
     setRelease(6);

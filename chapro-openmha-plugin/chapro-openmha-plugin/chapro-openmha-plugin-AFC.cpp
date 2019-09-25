@@ -1,6 +1,6 @@
 #include "mha_plugin.hh"
 #include <hearing-aid/AfcHearingAid.h>
-#include <hearing-aid/HearingAidInitialization.h>
+#include <hearing-aid/HearingAidBuilder.h>
 extern "C" {
 #include <chapro.h>
 }
@@ -434,7 +434,7 @@ public:
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
             std::make_unique<Chapro>(p), nullptr
         );
-        hearing_aid::HearingAidInitialization::Parameters q;
+        hearing_aid::HearingAidBuilder::Parameters q;
         q.sampleRate = configuration.srate;
         q.chunkSize = configuration.fragsize;
         q.attack = attack.data;
@@ -462,7 +462,7 @@ public:
         q.kneepoints =
             {tk.data.begin(), tk.data.end()};
         ChaproInitializer chaproInitializer{nullptr};
-        hearing_aid::HearingAidInitialization initialization{&chaproInitializer};
+        hearing_aid::HearingAidBuilder initialization{&chaproInitializer};
         initialization.initialize(q);
     }
 };

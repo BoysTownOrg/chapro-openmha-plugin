@@ -78,10 +78,10 @@ constexpr const char *name(Feedback t) {
     }
 }
 
-class HearingAidInitialization {
+class HearingAidBuilder {
     HearingAidInitializer *initializer;
 public:
-    explicit HearingAidInitialization(HearingAidInitializer *initializer) :
+    explicit HearingAidBuilder(HearingAidInitializer *initializer) :
         initializer{initializer} {}
 
     struct Parameters {
