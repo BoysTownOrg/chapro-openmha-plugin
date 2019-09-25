@@ -27,7 +27,8 @@ static void copy(const std::vector<double> &source, double *destination) {
 class ChaproInitializer : public hearing_aid::HearingAidInitializer {
     CHA_PTR cha_pointer;
 public:
-    ChaproInitializer(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    explicit ChaproInitializer(CHA_PTR cha_pointer) :
+        cha_pointer{cha_pointer} {}
 
     void initializeFirFilter(const FirParameters &p) override {
         const auto hamming = 0;
@@ -76,7 +77,9 @@ public:
         );
     }
 
-    void initializeFeedbackManagement(const FeedbackManagement &parameters) override {
+    void initializeFeedbackManagement(
+        const FeedbackManagement &parameters
+    ) override {
         CHA_AFC afc;
         afc.rho = parameters.filterEstimationForgettingFactor;
         afc.eps = parameters.filterEstimationPowerThreshold;
@@ -91,7 +94,9 @@ public:
         cha_afc_prepare(cha_pointer, &afc);
     }
 
-    void initializeAutomaticGainControl(const AutomaticGainControl &parameters) override {
+    void initializeAutomaticGainControl(
+        const AutomaticGainControl &parameters
+    ) override {
         CHA_DSL dsl{};
         dsl.attack = parameters.attack;
         dsl.release = parameters.release;
@@ -117,7 +122,7 @@ public:
 class ChaproFirFilter : public hearing_aid::Filter {
     CHA_PTR cha_pointer;
 public:
-    ChaproFirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    explicit ChaproFirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
     using real_signal_type = hearing_aid::real_signal_type;
     using complex_signal_type = hearing_aid::complex_signal_type;
     void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
@@ -143,7 +148,7 @@ void ChaproFirFilter::filterbankSynthesize(
 class ChaproIirFilter : public hearing_aid::Filter {
     CHA_PTR cha_pointer;
 public:
-    ChaproIirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    explicit ChaproIirFilter(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
     using real_signal_type = hearing_aid::real_signal_type;
     using complex_signal_type = hearing_aid::complex_signal_type;
     void filterbankAnalyze(real_signal_type, complex_signal_type, int) override;
@@ -169,8 +174,9 @@ void ChaproIirFilter::filterbankSynthesize(
 class ChaproFilterFactory : public hearing_aid::FilterFactory {
     CHA_PTR cha_pointer;
 public:
-    ChaproFilterFactory(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
-    
+    explicit ChaproFilterFactory(CHA_PTR cha_pointer) :
+        cha_pointer{cha_pointer} {}
+
     std::shared_ptr<hearing_aid::Filter> makeIir() override {
         return std::make_shared<ChaproIirFilter>(cha_pointer);
     }
@@ -365,7 +371,10 @@ public:
         cha_cleanup(cha_pointer); // releases memory, assumes double cleanup is safe
         ChaproInitializer chaproInitializer{cha_pointer};
         ChaproFilterFactory filterFactory{cha_pointer};
-        hearing_aid::HearingAidBuilder builder{&chaproInitializer, &filterFactory};
+        hearing_aid::HearingAidBuilder builder{
+            &chaproInitializer,
+            &filterFactory
+        };
         builder.build(q); // acquires memory
         hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
             std::make_unique<Chapro>(cha_pointer, p), builder.filter()
