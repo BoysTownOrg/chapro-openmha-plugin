@@ -1,4 +1,5 @@
 #include "HearingAidBuilder.h"
+#include <gsl/gsl>
 
 namespace hearing_aid {
 void HearingAidBuilder::build(const Parameters &p) {
@@ -26,7 +27,7 @@ void HearingAidBuilder::buildFirFilter(const Parameters &p) {
 }
 
 int HearingAidBuilder::channels(const Parameters &p) {
-    return p.crossFrequencies.size() + 1;
+    return gsl::narrow<int>(p.crossFrequencies.size() + 1);
 }
 
 void HearingAidBuilder::buildIirFilter(const Parameters &p) {

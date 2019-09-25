@@ -18,10 +18,8 @@ extern "C" {
 
 #include <gsl/gsl>
 
-static void copy(const std::vector<double> &source, double *destination) {
-    using size_type = std::vector<double>::size_type;
-    for (size_type i = 0; i < source.size(); ++i)
-        destination[i] = source.at(i);
+static void copy(const std::vector<double> &source, gsl::span<double> destination) {
+    std::copy(source.begin(), source.end(), destination.begin());
 }
 
 class ChaproInitializer : public hearing_aid::HearingAidInitializer {
@@ -340,7 +338,8 @@ public:
     void prepare(mhaconfig_t &configuration) override {
         hearing_aid::HearingAidBuilder::Parameters q;
         q.sampleRate = configuration.srate;
-        q.chunkSize = configuration.fragsize;
+        auto chunkSize = gsl::narrow<int>(configuration.fragsize);
+        q.chunkSize = chunkSize;
         q.attack = attack.data;
         q.release = release.data;
         q.fullScaleLevel = maxdB.data;
@@ -366,8 +365,8 @@ public:
         q.kneepoints =
             {tk.data.begin(), tk.data.end()};
         hearing_aid::SuperSignalProcessor::Parameters p;
-        p.chunkSize = configuration.fragsize;
-        p.channels = cross_freq.data.size() + 1;
+        p.chunkSize = chunkSize;
+        p.channels = gsl::narrow<int>(cross_freq.data.size() + 1);
         cha_cleanup(cha_pointer); // releases memory, assumes double cleanup is safe
         ChaproInitializer chaproInitializer{cha_pointer};
         ChaproFilterFactory filterFactory{cha_pointer};

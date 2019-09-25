@@ -19,15 +19,15 @@ class SuperSignalProcessorStub : public SuperSignalProcessor, public Filter {
     real_signal_type compressOutputInput_;
     real_signal_type compressOutputOutput_;
     real_signal_type feedbackCancelOutputInput_;
-    int chunkSize_;
-    int feedbackCancelInputChunkSize_;
-    int compressInputChunkSize_;
-    int filterbankAnalyzeChunkSize_;
-    int compressChannelChunkSize_;
-    int filterbankSynthesizeChunkSize_;
-    int compressOutputChunkSize_;
-    int feedbackCancelOutputChunkSize_;
-    int channels_;
+    int chunkSize_{};
+    int feedbackCancelInputChunkSize_{};
+    int compressInputChunkSize_{};
+    int filterbankAnalyzeChunkSize_{};
+    int compressChannelChunkSize_{};
+    int filterbankSynthesizeChunkSize_{};
+    int compressOutputChunkSize_{};
+    int feedbackCancelOutputChunkSize_{};
+    int channels_{};
 public:
     auto feedbackCancelInputInput() {
         return feedbackCancelInputInput_;
@@ -195,11 +195,11 @@ public:
 };
 
 class AfcHearingAidTests : public ::testing::Test {
-protected:
-    using buffer_type = std::vector<real_signal_type::element_type>;
     std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor =
         std::make_shared<SuperSignalProcessorStub>();
-
+protected:
+    using buffer_type = std::vector<real_signal_type::element_type>;
+    
     auto &signalProcessingLog() {
         return superSignalProcessor->log();
     }
