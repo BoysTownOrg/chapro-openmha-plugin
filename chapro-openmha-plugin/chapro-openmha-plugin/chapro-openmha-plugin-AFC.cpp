@@ -166,14 +166,28 @@ void ChaproIirFilter::filterbankSynthesize(
     cha_iirfb_synthesize(cha_pointer, input.data(), output.data(), chunkSize);
 }
 
+class ChaproFilterFactory : public hearing_aid::FilterFactory {
+    CHA_PTR cha_pointer;
+public:
+    ChaproFilterFactory(CHA_PTR cha_pointer) : cha_pointer{cha_pointer} {}
+    
+    std::shared_ptr<hearing_aid::Filter> makeIir() override {
+        return std::make_shared<ChaproIirFilter>(cha_pointer);
+    }
+
+    std::shared_ptr<hearing_aid::Filter> makeFir() override {
+        return std::make_shared<ChaproFirFilter>(cha_pointer);
+    }
+};
+
 class Chapro : public hearing_aid::SuperSignalProcessor, public hearing_aid::Filter {
-    void *cha_pointer[NPTR]{};
+    CHA_PTR cha_pointer;
     const int channels_;
     const int chunkSize_;
 public:
     using real_signal_type = hearing_aid::real_signal_type;
     using complex_signal_type = hearing_aid::complex_signal_type;
-    explicit Chapro(const Parameters &);
+    Chapro(CHA_PTR cha_pointer, const Parameters &);
     ~Chapro() noexcept override;
     Chapro(Chapro &&) = delete;
     Chapro &operator=(Chapro &&) = delete;
@@ -190,73 +204,11 @@ public:
     int channels() override;
 };
 
-Chapro::Chapro(const Parameters &parameters) :
+Chapro::Chapro(CHA_PTR cha_pointer, const Parameters &parameters) :
+    cha_pointer{cha_pointer},
     channels_{ parameters.channels },
     chunkSize_{ parameters.chunkSize }
 {
-    CHA_DSL dsl{};
-    dsl.attack = parameters.attack_ms;
-    dsl.release = parameters.release_ms;
-    dsl.nchannel = channels_;
-    copy(parameters.crossFrequenciesHz, dsl.cross_freq);
-    copy(parameters.compressionRatios, dsl.cr);
-    copy(parameters.kneepoints_dBSpl, dsl.tk);
-    copy(parameters.kneepointGains_dB, dsl.tkgain);
-    copy(parameters.broadbandOutputLimitingThresholds_dBSpl, dsl.bolt);
-    CHA_WDRC wdrc;
-    wdrc.attack = 1;
-    wdrc.release = 50;
-    wdrc.fs = parameters.sampleRate;
-    wdrc.maxdB = parameters.max_dB_Spl;
-    wdrc.tkgain = 0;
-    wdrc.tk = 105;
-    wdrc.cr = 10;
-    wdrc.bolt = 105;
-    int zerosCount = 4;
-    auto size_ = 2*channels_*zerosCount;
-    std::vector<float> zeros(size_);
-    std::vector<float> poles(size_);
-    std::vector<float> gain(channels_);
-    std::vector<int> delay(channels_);
-    double ir_delay_ms = 2.5;
-    CHA_AFC afc;
-    afc.rho = parameters.filterEstimationForgettingFactor;
-    afc.eps = parameters.filterEstimationPowerThreshold;
-    afc.mu = parameters.filterEstimationStepSize;
-    afc.afl = parameters.adaptiveFeedbackFilterLength;
-    afc.wfl = parameters.signalWhiteningFilterLength;
-    afc.pfl = parameters.persistentFeedbackFilterLength;
-    afc.hdel = parameters.hardwareLatency;
-    afc.sqm = parameters.saveQualityMetric;
-    afc.fbg = parameters.feedbackGain;
-    afc.nqm = 0;
-    cha_iirfb_design(
-        zeros.data(),
-        poles.data(),
-        gain.data(),
-        delay.data(),
-        dsl.cross_freq,
-        channels_,
-        zerosCount,
-        parameters.sampleRate,
-        ir_delay_ms
-    );
-    cha_iirfb_prepare(
-        cha_pointer,
-        zeros.data(),
-        poles.data(),
-        gain.data(),
-        delay.data(),
-        channels_,
-        zerosCount,
-        parameters.sampleRate,
-        chunkSize_
-    );
-    cha_afc_prepare(
-        cha_pointer,
-        &afc
-    );
-    cha_agc_prepare(cha_pointer, &dsl, &wdrc);
 }
 
 Chapro::~Chapro() noexcept {
@@ -324,6 +276,7 @@ int Chapro::channels() {
 }
 
 class ChaproOpenMhaPlugin : public MHAPlugin::plugin_t<int> {
+    void *cha_pointer[NPTR]{};
     MHAParser::vfloat_t cross_freq;
     MHAParser::vfloat_t cr;
     MHAParser::vfloat_t tk;
@@ -406,34 +359,6 @@ public:
     }
 
     void prepare(mhaconfig_t &configuration) override {
-        hearing_aid::SuperSignalProcessor::Parameters p;
-        p.sampleRate = configuration.srate;
-        p.chunkSize = configuration.fragsize;
-        p.channels = cross_freq.data.size() + 1;
-        p.attack_ms = attack.data;
-        p.release_ms = release.data;
-        p.max_dB_Spl = maxdB.data;
-        p.filterEstimationStepSize = mu.data;
-        p.filterEstimationForgettingFactor = rho.data;
-        p.filterEstimationPowerThreshold = eps.data;
-        p.feedbackGain = fbg.data;
-        p.saveQualityMetric = sqm.data;
-        p.adaptiveFeedbackFilterLength = afl.data;
-        p.signalWhiteningFilterLength = wfl.data;
-        p.persistentFeedbackFilterLength = pfl.data;
-        p.hardwareLatency = hdel.data;
-        p.compressionRatios = {cr.data.begin(), cr.data.end()};
-        p.broadbandOutputLimitingThresholds_dBSpl =
-            {bolt.data.begin(), bolt.data.end()};
-        p.crossFrequenciesHz =
-            {cross_freq.data.begin(), cross_freq.data.end()};
-        p.kneepointGains_dB =
-            {tkgain.data.begin(), tkgain.data.end()};
-        p.kneepoints_dBSpl =
-            {tk.data.begin(), tk.data.end()};
-        hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
-            std::make_unique<Chapro>(p), nullptr
-        );
         hearing_aid::HearingAidBuilder::Parameters q;
         q.sampleRate = configuration.srate;
         q.chunkSize = configuration.fragsize;
@@ -461,9 +386,17 @@ public:
             {tkgain.data.begin(), tkgain.data.end()};
         q.kneepoints =
             {tk.data.begin(), tk.data.end()};
-        ChaproInitializer chaproInitializer{nullptr};
-        hearing_aid::HearingAidBuilder builder{&chaproInitializer, nullptr};
-        builder.build(q);
+        hearingAid.reset(); // releases memory
+        ChaproInitializer chaproInitializer{cha_pointer};
+        ChaproFilterFactory filterFactory{cha_pointer};
+        hearing_aid::HearingAidBuilder builder{&chaproInitializer, &filterFactory};
+        builder.build(q); // acquires memory
+        hearing_aid::SuperSignalProcessor::Parameters p;
+        p.chunkSize = configuration.fragsize;
+        p.channels = cross_freq.data.size() + 1;
+        hearingAid = std::make_unique<hearing_aid::AfcHearingAid>(
+            std::make_unique<Chapro>(cha_pointer, p), builder.filter()
+        );
     }
 };
 
