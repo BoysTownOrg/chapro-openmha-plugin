@@ -83,8 +83,9 @@ function(add_openmha_plugin target source plugin)
         OUTPUT_NAME ${plugin}
         SKIP_BUILD_RPATH TRUE
     )
-    target_compile_options(${target} 
-        PRIVATE -Wall -Wextra -pedantic -Werror -O3
+    target_compile_options(${target} PRIVATE 
+        ${CHAPRO_OPENMHA_PLUGIN_PRIVATE_WARNINGS}
+        ${CHAPRO_OPENMHA_PLUGIN_PRIVATE_OPTIMIZATIONS}
     )
     target_compile_features(${target} PRIVATE cxx_std_17)
     target_link_libraries(${target} hearing-aid openMHA chapro GSL)
