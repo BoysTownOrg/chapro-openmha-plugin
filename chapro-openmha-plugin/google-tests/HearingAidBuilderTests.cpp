@@ -413,11 +413,11 @@ protected:
         assertEqual(n, initializer_.iirChunkSize());
     }
 
-    void setNoFeedback() {
+    void setFeedbackOff() {
         setFeedback(Feedback::off);
     }
 
-    void setFeedback() {
+    void setFeedbackOn() {
         setFeedback(Feedback::on);
     }
 
@@ -496,17 +496,25 @@ protected:
     void assertAdaptiveFeedbackFilterLength(int x) {
         assertEqual(x, initializer_.adaptiveFeedbackFilterLength());
     }
+
+    void setFirFilter() {
+        setFilterType(FilterType::fir);
+    }
+
+    void setIirFilter() {
+        setFilterType(FilterType::iir);
+    }
 };
 
 TEST_F(HearingAidBuilderTests, firOnlyInitializesFir) {
-    setFilterType(FilterType::fir);
+    setFirFilter();
     build();
     assertFirInitialized();
     assertIirNotInitialized();
 }
 
 TEST_F(HearingAidBuilderTests, firPassesParameters) {
-    setFilterType(FilterType::fir);
+    setFirFilter();
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
     setWindowSize(6);
@@ -520,14 +528,14 @@ TEST_F(HearingAidBuilderTests, firPassesParameters) {
 }
 
 TEST_F(HearingAidBuilderTests, iirOnlyInitializesIir) {
-    setFilterType(FilterType::iir);
+    setIirFilter();
     build();
     assertIirInitialized();
     assertFirNotInitialized();
 }
 
 TEST_F(HearingAidBuilderTests, iirPassesParameters) {
-    setFilterType(FilterType::iir);
+    setIirFilter();
     setCrossFrequencies({ 1, 2, 3 });
     setSampleRate(5);
     setChunkSize(6);
@@ -542,7 +550,7 @@ TEST_F(
     HearingAidBuilderTests,
     noFeedbackSetsGainAndAdaptiveFilterLengthToZero
 ) {
-    setNoFeedback();
+    setFeedbackOff();
     build();
     assertFeedbackGain(0);
     assertAdaptiveFeedbackFilterLength(0);
@@ -552,7 +560,7 @@ TEST_F(
     HearingAidBuilderTests,
     feedbackPassesParameters
 ) {
-    setFeedback();
+    setFeedbackOn();
     setFeedbackGain(1);
     setAdaptiveFeedbackFilterLength(2);
     setFilterEstimationForgettingFactor(3);
@@ -598,7 +606,7 @@ TEST_F(HearingAidBuilderTests, passesAgcParameters) {
 }
 
 TEST_F(HearingAidBuilderTests, iirBuildReturnsIirFilter) {
-    setFilterType(FilterType::iir);
+    setIirFilter();
     auto filter = std::make_shared<FilterStub>();
     setIirFilter(filter);
     build();
@@ -606,7 +614,7 @@ TEST_F(HearingAidBuilderTests, iirBuildReturnsIirFilter) {
 }
 
 TEST_F(HearingAidBuilderTests, firBuildReturnsFirFilter) {
-    setFilterType(FilterType::fir);
+    setFirFilter();
     auto filter = std::make_shared<FilterStub>();
     setFirFilter(filter);
     build();
