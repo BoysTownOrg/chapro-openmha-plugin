@@ -63,6 +63,8 @@ constexpr const char *name(FilterType t) {
             return "FIR";
         case FilterType::iir:
             return "IIR";
+        default:
+            return "";
     }
 }
 
@@ -77,6 +79,8 @@ constexpr const char *name(Feedback t) {
             return "yes";
         case Feedback::off:
             return "off";
+        default:
+            return "";
     }
 }
 
