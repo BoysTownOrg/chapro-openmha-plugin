@@ -81,6 +81,7 @@ constexpr const char *name(Feedback t) {
 }
 
 class HearingAidBuilder {
+    std::shared_ptr<Filter> filter_;
     HearingAidInitializer *initializer;
     FilterFactory *filterFactory;
 public:
@@ -117,7 +118,7 @@ public:
     };
 
     void build(const Parameters &);
-    std::shared_ptr<Filter> iirFilter();
+    std::shared_ptr<Filter> filter();
 private:
     int channels(const Parameters &);
 };

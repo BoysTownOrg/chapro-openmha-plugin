@@ -28,13 +28,22 @@ class FilterStub : public Filter {
 
 class FilterFactoryStub : public FilterFactory {
     std::shared_ptr<Filter> iirFilter_;
+    std::shared_ptr<Filter> firFilter_;
 public:
     void setIirFilter(std::shared_ptr<Filter> f) {
         iirFilter_ = std::move(f);
     }
 
-    std::shared_ptr<Filter> makeIir() {
+    void setFirFilter(std::shared_ptr<Filter> f) {
+        firFilter_ = std::move(f);
+    }
+
+    std::shared_ptr<Filter> makeIir() override {
         return iirFilter_;
+    }
+
+    std::shared_ptr<Filter> makeFir() override {
+        return firFilter_;
     }
 };
 
@@ -247,6 +256,10 @@ protected:
         filterFactory.setIirFilter(std::move(f));
     }
 
+    void setFirFilter(std::shared_ptr<Filter> f) {
+        filterFactory.setFirFilter(std::move(f));
+    }
+
     void setFilterType(std::string s) {
         p.filterType = std::move(s);
     }
@@ -363,8 +376,8 @@ protected:
         assertEqual(x, initializer_.agcFullScaleLevel());
     }
 
-    void assertBuiltIirFilter(std::shared_ptr<Filter> f) {
-        assertEqual(f, builder.iirFilter());
+    void assertBuiltFilter(std::shared_ptr<Filter> f) {
+        assertEqual(f, builder.filter());
     }
 
     void setSampleRate(double r) {
@@ -592,6 +605,14 @@ TEST_F(HearingAidBuilderTests, iirBuildReturnsIirFilter) {
     auto filter = std::make_shared<FilterStub>();
     setIirFilter(filter);
     build();
-    assertBuiltIirFilter(filter);
+    assertBuiltFilter(filter);
+}
+
+TEST_F(HearingAidBuilderTests, firBuildReturnsFirFilter) {
+    setFilterType(FilterType::fir);
+    auto filter = std::make_shared<FilterStub>();
+    setFirFilter(filter);
+    build();
+    assertBuiltFilter(filter);
 }
 }}

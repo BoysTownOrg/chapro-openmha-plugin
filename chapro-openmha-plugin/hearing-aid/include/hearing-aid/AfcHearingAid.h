@@ -29,6 +29,7 @@ class FilterFactory {
 public:
     virtual ~FilterFactory() = default;
     virtual std::shared_ptr<Filter> makeIir() = 0;
+    virtual std::shared_ptr<Filter> makeFir() = 0;
 };
 
 class SuperSignalProcessor {

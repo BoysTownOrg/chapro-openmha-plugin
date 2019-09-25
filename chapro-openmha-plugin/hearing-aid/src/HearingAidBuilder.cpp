@@ -10,6 +10,7 @@ void HearingAidBuilder::build(const Parameters &p) {
         firParameters.windowSize = p.windowSize;
         firParameters.chunkSize = p.chunkSize;
         initializer->initializeFirFilter(firParameters);
+        filter_ = filterFactory->makeFir();
     } else {
         HearingAidInitializer::IirParameters iirParameters;
         iirParameters.crossFrequencies = p.crossFrequencies;
@@ -17,6 +18,7 @@ void HearingAidBuilder::build(const Parameters &p) {
         iirParameters.sampleRate = p.sampleRate;
         iirParameters.chunkSize = p.chunkSize;
         initializer->initializeIirFilter(iirParameters);
+        filter_ = filterFactory->makeIir();
     }
     HearingAidInitializer::FeedbackManagement feedbackManagement;
     feedbackManagement.filterEstimationForgettingFactor =
@@ -59,7 +61,7 @@ int HearingAidBuilder::channels(const Parameters &p) {
     return p.crossFrequencies.size() + 1;
 }
 
-std::shared_ptr<Filter> HearingAidBuilder::iirFilter() {
-    return filterFactory->makeIir();
+std::shared_ptr<Filter> HearingAidBuilder::filter() {
+    return filter_;
 }
 }
