@@ -12,6 +12,32 @@ void assertFalse(bool c) {
     EXPECT_FALSE(c);
 }
 
+class FilterStub : public Filter {
+    void filterbankAnalyze(
+        real_signal_type,
+        complex_signal_type,
+        int
+    ) override {}
+    
+    void filterbankSynthesize(
+        complex_signal_type,
+        real_signal_type,
+        int
+    ) override {}
+};
+
+class FilterFactoryStub : public FilterFactory {
+    std::shared_ptr<Filter> iirFilter_;
+public:
+    void setIirFilter(std::shared_ptr<Filter> f) {
+        iirFilter_ = std::move(f);
+    }
+
+    std::shared_ptr<Filter> makeIir() {
+        return iirFilter_;
+    }
+};
+
 class HearingAidInitializerStub : public HearingAidInitializer {
     std::vector<double> firCrossFrequencies_;
     std::vector<double> iirCrossFrequencies_;
@@ -209,11 +235,16 @@ public:
 
 class HearingAidBuilderTests : public ::testing::Test {
     HearingAidInitializerStub initializer_;
-    HearingAidBuilder builder{&initializer_};
+    FilterFactoryStub filterFactory;
+    HearingAidBuilder builder{&initializer_, &filterFactory};
     HearingAidBuilder::Parameters p{};
 protected:
     void setFilterType(FilterType t) {
         setFilterType(name(t));
+    }
+
+    void setIirFilter(std::shared_ptr<Filter> f) {
+        filterFactory.setIirFilter(std::move(f));
     }
 
     void setFilterType(std::string s) {
@@ -330,6 +361,10 @@ protected:
 
     void assertAgcFullScaleLevel(double x) {
         assertEqual(x, initializer_.agcFullScaleLevel());
+    }
+
+    void assertBuiltIirFilter(std::shared_ptr<Filter> f) {
+        assertEqual(f, builder.iirFilter());
     }
 
     void setSampleRate(double r) {
@@ -550,5 +585,13 @@ TEST_F(HearingAidBuilderTests, passesAgcParameters) {
     assertAgcBroadbandOutputLimitingThresholds({16, 17, 18});
     assertAgcSampleRate(19);
     assertAgcFullScaleLevel(20);
+}
+
+TEST_F(HearingAidBuilderTests, iirBuildReturnsIirFilter) {
+    setFilterType(FilterType::iir);
+    auto filter = std::make_shared<FilterStub>();
+    setIirFilter(filter);
+    build();
+    assertBuiltIirFilter(filter);
 }
 }}

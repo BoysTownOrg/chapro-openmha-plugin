@@ -58,4 +58,8 @@ void HearingAidBuilder::build(const Parameters &p) {
 int HearingAidBuilder::channels(const Parameters &p) {
     return p.crossFrequencies.size() + 1;
 }
+
+std::shared_ptr<Filter> HearingAidBuilder::iirFilter() {
+    return filterFactory->makeIir();
+}
 }

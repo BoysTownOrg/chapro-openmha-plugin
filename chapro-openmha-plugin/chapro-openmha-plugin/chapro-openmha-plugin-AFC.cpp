@@ -462,7 +462,7 @@ public:
         q.kneepoints =
             {tk.data.begin(), tk.data.end()};
         ChaproInitializer chaproInitializer{nullptr};
-        hearing_aid::HearingAidBuilder builder{&chaproInitializer};
+        hearing_aid::HearingAidBuilder builder{&chaproInitializer, nullptr};
         builder.build(q);
     }
 };

@@ -25,6 +25,12 @@ public:
     ) = 0;
 };
 
+class FilterFactory {
+public:
+    virtual ~FilterFactory() = default;
+    virtual std::shared_ptr<Filter> makeIir() = 0;
+};
+
 class SuperSignalProcessor {
 public:
     struct Parameters {

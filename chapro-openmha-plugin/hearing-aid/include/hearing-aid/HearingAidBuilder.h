@@ -1,8 +1,10 @@
 #ifndef CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDINITIALIZATION_H_
 #define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDINITIALIZATION_H_
 
+#include "AfcHearingAid.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace hearing_aid {
 class HearingAidInitializer {
@@ -80,9 +82,14 @@ constexpr const char *name(Feedback t) {
 
 class HearingAidBuilder {
     HearingAidInitializer *initializer;
+    FilterFactory *filterFactory;
 public:
-    explicit HearingAidBuilder(HearingAidInitializer *initializer) :
-        initializer{initializer} {}
+    HearingAidBuilder(
+        HearingAidInitializer *initializer,
+        FilterFactory *filterFactory
+    ) :
+        initializer{initializer},
+        filterFactory{filterFactory} {}
 
     struct Parameters {
         std::vector<double> crossFrequencies;
@@ -110,6 +117,7 @@ public:
     };
 
     void build(const Parameters &);
+    std::shared_ptr<Filter> iirFilter();
 private:
     int channels(const Parameters &);
 };
