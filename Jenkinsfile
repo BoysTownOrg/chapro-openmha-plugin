@@ -115,7 +115,6 @@ def cmake_generate_build_with_toolchain(toolchain) {
 
 def build_plugins() {
     cmake_build_target('chapro-openmha-plugin')
-    cmake_build_target('chapro-afc-openmha-plugin')
 }
 
 def cmake_build_target(target) {

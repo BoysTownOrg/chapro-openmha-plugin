@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 namespace hearing_aid::tests { namespace {
-class SuperSignalProcessorStub : public SuperSignalProcessor {
+class SuperSignalProcessorStub : public SuperSignalProcessor, public Filter {
     LogString log_;
     complex_signal_type filterbankSynthesizeInput_;
     complex_signal_type compressChannelOutput_;
@@ -196,8 +196,7 @@ public:
 
 class AfcHearingAidTests : public ::testing::Test {
 protected:
-    using signal_type = AfcHearingAid::signal_type;
-    using buffer_type = std::vector<signal_type::element_type>;
+    using buffer_type = std::vector<real_signal_type::element_type>;
     std::shared_ptr<SuperSignalProcessorStub> superSignalProcessor =
         std::make_shared<SuperSignalProcessorStub>();
 
@@ -216,8 +215,8 @@ protected:
         process(x);
     }
 
-    void process(signal_type x) {
-        AfcHearingAid hearingAid{superSignalProcessor};
+    void process(real_signal_type x) {
+        AfcHearingAid hearingAid{superSignalProcessor, superSignalProcessor};
         hearingAid.process(x);
     }
 
@@ -240,7 +239,7 @@ protected:
     }
 
     void assertEachComplexSize(
-        SuperSignalProcessor::complex_signal_type::size_type c
+        complex_signal_type::size_type c
     ) {
         assertEqual(c, superSignalProcessor->filterbankAnalyzeOutput().size());
         assertEqual(c, superSignalProcessor->compressChannelInput().size());
@@ -263,7 +262,7 @@ protected:
         );
     }
 
-    void assertEachRealBufferEquals(signal_type x) {
+    void assertEachRealBufferEquals(real_signal_type x) {
         assertEqual(x, superSignalProcessor->feedbackCancelInputInput());
         assertEqual(x, superSignalProcessor->feedbackCancelInputOutput());
         assertEqual(x, superSignalProcessor->filterbankAnalyzeInput());

@@ -104,7 +104,3 @@ add_openmha_plugin(chapro-openmha-plugin
     chapro-openmha-plugin.cpp 
     chapro
 )
-add_openmha_plugin(chapro-afc-openmha-plugin 
-    chapro-openmha-plugin-AFC.cpp 
-    chapro_afc
-)

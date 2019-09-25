@@ -1,6 +1,6 @@
-add_library(hearing-aid 
-    src/HearingAid.cpp
+add_library(hearing-aid
     src/AfcHearingAid.cpp
+    src/HearingAidBuilder.cpp
 )
 set_property(TARGET hearing-aid PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(hearing-aid 
