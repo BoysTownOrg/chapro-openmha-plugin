@@ -4,21 +4,13 @@
 #include <string>
 
 namespace hearing_aid { namespace {
-void assertTrue(bool c) {
-    EXPECT_TRUE(c);
-}
-
-void assertFalse(bool c) {
-    EXPECT_FALSE(c);
-}
-
 class FilterStub : public Filter {
     void filterbankAnalyze(
         real_signal_type,
         complex_signal_type,
         int
     ) override {}
-    
+
     void filterbankSynthesize(
         complex_signal_type,
         real_signal_type,
@@ -228,7 +220,9 @@ public:
         saveQualityMetric_ = p.saveQualityMetric;
     }
 
-    void initializeAutomaticGainControl(const AutomaticGainControl &p) override {
+    void initializeAutomaticGainControl(
+        const AutomaticGainControl &p
+    ) override {
         agcCrossFrequencies_ = p.crossFrequencies;
         agcChannels_ = p.channels;
         agcAttack_ = p.attack;
@@ -236,7 +230,8 @@ public:
         agcCompressionRatios_ = p.compressionRatios;
         agcKneepoints_ = p.kneepoints;
         agcKneepointGains_ = p.kneepointGains;
-        agcBroadbandOutputLimitingThresholds_ = p.broadbandOutputLimitingThresholds;
+        agcBroadbandOutputLimitingThresholds_ =
+            p.broadbandOutputLimitingThresholds;
         agcSampleRate_ = p.sampleRate;
         agcFullScaleLevel_ = p.fullScaleLevel;
     }
@@ -344,7 +339,9 @@ protected:
         assertEqual(x, initializer_.agcKneepointGains());
     }
 
-    void assertAgcBroadbandOutputLimitingThresholds(const std::vector<double> &x) {
+    void assertAgcBroadbandOutputLimitingThresholds(
+        const std::vector<double> &x
+    ) {
         assertEqual(x, initializer_.agcBroadbandOutputLimitingThresholds());
     }
 

@@ -32,4 +32,8 @@ inline void assertTrue(bool c) {
     EXPECT_TRUE(c);
 }
 
+inline void assertFalse(bool c) {
+    EXPECT_FALSE(c);
+}
+
 #endif
