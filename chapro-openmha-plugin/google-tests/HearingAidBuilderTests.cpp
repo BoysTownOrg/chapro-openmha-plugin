@@ -373,7 +373,7 @@ protected:
         assertEqual(x, initializer_.agcFullScaleLevel());
     }
 
-    void assertBuiltFilter(std::shared_ptr<Filter> f) {
+    void assertBuiltFilter(const std::shared_ptr<Filter> &f) {
         assertEqual(f, builder.filter());
     }
 
