@@ -1,5 +1,5 @@
-#ifndef CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDINITIALIZATION_H_
-#define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDINITIALIZATION_H_
+#ifndef CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDBUILDER_H_
+#define CHAPRO_OPENMHA_PLUGIN_HEARING_AID_INCLUDE_HEARING_AID_HEARINGAIDBUILDER_H_
 
 #include "AfcHearingAid.h"
 #include <string>
@@ -49,7 +49,9 @@ public:
         double fullScaleLevel;
         int channels;
     };
-    virtual void initializeAutomaticGainControl(const AutomaticGainControl &) = 0;
+    virtual void initializeAutomaticGainControl(
+        const AutomaticGainControl &
+    ) = 0;
 };
 
 enum class FilterType {
@@ -124,6 +126,11 @@ public:
     void build(const Parameters &);
     std::shared_ptr<Filter> filter();
 private:
+    void prepareFilter(const Parameters &);
+    void buildFirFilter(const Parameters &);
+    void buildIirFilter(const Parameters &);
+    void prepareFeedbackManagement(const Parameters &);
+    void prepareAutomaticGainControl(const Parameters &);
     int channels(const Parameters &);
 };
 }
