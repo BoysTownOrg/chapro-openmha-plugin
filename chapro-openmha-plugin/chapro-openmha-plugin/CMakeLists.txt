@@ -32,11 +32,12 @@ function(add_openmha)
         CONFIGURE_COMMAND
             ${OPENMHA_SOURCE_DIR}/configure --arch=${OPENMHA_ARCH} &&
             make BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR} clean
-        BUILD_COMMAND
-            make -C ${OPENMHA_LIBMHA_DIR}
+        BUILD_COMMAND make 
+            -C ${OPENMHA_LIBMHA_DIR}
             -f ${CMAKE_SOURCE_DIR}/Makefile-libopenmha-simplified
-            DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX} 
-            COMPILERPREFIX=${OPENMHA_COMPILER_PREFIX}
+            DYNAMIC_LIB_EXT=${CMAKE_SHARED_LIBRARY_SUFFIX}
+            CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
             BUILD_DIR=${OPENMHA_RELATIVE_BUILD_DIR}
         INSTALL_COMMAND
             cp -f ${OPENMHA_LIBRARY} ${EXTERNAL_PROJECT_LIBRARY_DIR}
@@ -65,7 +66,9 @@ function(add_chapro)
             chmod +x configure &&
             ./configure &&
             make -f ${CHAPRO_MAKEFILE} clean
-        BUILD_COMMAND make -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
+        BUILD_COMMAND make 
+            -f ${CHAPRO_MAKEFILE} ${CHAPRO_LIBRARY_NAME}
+            CC=${CMAKE_C_COMPILER}
         INSTALL_COMMAND
             cp -f ${CHAPRO_LIBRARY_NAME} ${EXTERNAL_PROJECT_LIBRARY_DIR}
     )

@@ -105,7 +105,7 @@ def execute_tests() {
 }
 
 def cross_compile_plugins() {
-    cmake_generate_build_with_toolchain('Toolchain-arm-linux-gnueabihf.cmake')
+    cmake_generate_build_with_toolchain('Toolchain-arm-linux-gnueabihf-8.cmake')
     build_plugins()
 }
 

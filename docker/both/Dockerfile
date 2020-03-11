@@ -1,8 +1,8 @@
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     make \
-    gcc-arm-linux-gnueabihf \
-    g++-arm-linux-gnueabihf \
+    gcc-8-arm-linux-gnueabihf \
+    g++-8-arm-linux-gnueabihf \
     gcc \
     g++ \
     wget
