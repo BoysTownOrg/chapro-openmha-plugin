@@ -8,7 +8,7 @@ target_include_directories(hearing-aid
     PRIVATE include/hearing-aid
 )
 target_compile_options(hearing-aid 
-    PRIVATE -Wall -Wextra -pedantic -Werror -O3
+    PRIVATE -Wall -Wextra -pedantic -O3
 )
 target_compile_features(hearing-aid PRIVATE cxx_std_17)
 target_link_libraries(hearing-aid GSL)

@@ -330,9 +330,7 @@ public:
     mha_wave_t *process(mha_wave_t * signal) {
         hearingAid->process({
             signal->buf,
-            gsl::narrow<hearing_aid::real_signal_type::index_type>(
-                signal->num_frames
-            )
+            signal->num_frames
         });
         return signal;
     }
